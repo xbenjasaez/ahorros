@@ -21,5 +21,6 @@
     <ProjectReference Include="..\Ahorro.Data\Ahorro.Data.csproj" />
     <ProjectReference Include="..\Ahorro.Themes\Ahorro.Themes.csproj" />
     <ProjectReference Include="..\Ahorro.Configuration\Ahorro.Configuration.csproj" />
+    <ProjectReference Include="..\Ahorro.Exports\Ahorro.Exports.csproj" />
   </ItemGroup>
 </Project>

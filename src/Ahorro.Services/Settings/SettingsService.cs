@@ -1,6 +1,6 @@
 using Ahorro.Data;
 using Ahorro.Models.Entities;
-using Ahorro.Services.Abstractions;
+using Ahorro.Models.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ahorro.Services.Settings;

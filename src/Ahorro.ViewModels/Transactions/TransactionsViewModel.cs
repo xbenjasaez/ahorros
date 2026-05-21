@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Ahorro.Helpers;
 using Ahorro.Models.Dtos;
 using Ahorro.Models.Enums;
+using Ahorro.Models.Abstractions;
 using Ahorro.Services.Abstractions;
 using Ahorro.ViewModels.Models;
 using CommunityToolkit.Mvvm.ComponentModel;

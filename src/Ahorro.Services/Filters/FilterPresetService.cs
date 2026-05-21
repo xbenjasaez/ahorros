@@ -2,7 +2,7 @@ using System.Text.Json;
 using Ahorro.Data;
 using Ahorro.Models.Dtos;
 using Ahorro.Models.Entities;
-using Ahorro.Services.Abstractions;
+using Ahorro.Models.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ahorro.Services.Filters;

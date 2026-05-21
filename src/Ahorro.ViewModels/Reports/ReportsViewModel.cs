@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Ahorro.Helpers;
+using Ahorro.Models.Abstractions;
 using Ahorro.Services.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
