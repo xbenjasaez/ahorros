@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Color.BackgroundApp">#0D1117</Color>
+    <Color x:Key="Color.Panel">#131A22</Color>
+    <Color x:Key="Color.Card">#18222D</Color>
+    <Color x:Key="Color.BorderSubtle">#243244</Color>
+    <Color x:Key="Color.TextPrimary">#EAF2FF</Color>
+    <Color x:Key="Color.TextSecondary">#93A4BD</Color>
+    <Color x:Key="Color.AccentCyan">#27D3FF</Color>
+    <Color x:Key="Color.PositiveGreen">#35E0A1</Color>
+    <Color x:Key="Color.AlertAmber">#FFB84D</Color>
+    <Color x:Key="Color.CriticalRed">#FF6B6B</Color>
+
+    <SolidColorBrush x:Key="Brush.BackgroundApp" Color="{StaticResource Color.BackgroundApp}"/>
+    <SolidColorBrush x:Key="Brush.Panel" Color="{StaticResource Color.Panel}"/>
+    <SolidColorBrush x:Key="Brush.Card" Color="{StaticResource Color.Card}"/>
+    <SolidColorBrush x:Key="Brush.BorderSubtle" Color="{StaticResource Color.BorderSubtle}"/>
+    <SolidColorBrush x:Key="Brush.TextPrimary" Color="{StaticResource Color.TextPrimary}"/>
+    <SolidColorBrush x:Key="Brush.TextSecondary" Color="{StaticResource Color.TextSecondary}"/>
+    <SolidColorBrush x:Key="Brush.AccentCyan" Color="{StaticResource Color.AccentCyan}"/>
+    <SolidColorBrush x:Key="Brush.PositiveGreen" Color="{StaticResource Color.PositiveGreen}"/>
+    <SolidColorBrush x:Key="Brush.AlertAmber" Color="{StaticResource Color.AlertAmber}"/>
+    <SolidColorBrush x:Key="Brush.CriticalRed" Color="{StaticResource Color.CriticalRed}"/>
+</ResourceDictionary>

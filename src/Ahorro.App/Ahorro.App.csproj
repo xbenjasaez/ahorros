@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon></ApplicationIcon>
+    <RootNamespace>Ahorro.App</RootNamespace>
+    <AssemblyName>Ahorro</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ahorro.Views\Ahorro.Views.csproj" />
+    <ProjectReference Include="..\Ahorro.ViewModels\Ahorro.ViewModels.csproj" />
+    <ProjectReference Include="..\Ahorro.Services\Ahorro.Services.csproj" />
+    <ProjectReference Include="..\Ahorro.Repositories\Ahorro.Repositories.csproj" />
+    <ProjectReference Include="..\Ahorro.Data\Ahorro.Data.csproj" />
+    <ProjectReference Include="..\Ahorro.Themes\Ahorro.Themes.csproj" />
+    <ProjectReference Include="..\Ahorro.Configuration\Ahorro.Configuration.csproj" />
+  </ItemGroup>
+</Project>

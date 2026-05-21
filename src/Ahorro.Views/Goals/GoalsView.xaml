@@ -1,0 +1,50 @@
+<UserControl x:Class="Ahorro.Views.Goals.GoalsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.BackgroundApp}">
+    <ScrollViewer Padding="24">
+        <StackPanel>
+            <Grid Margin="0,0,0,20">
+                <TextBlock Style="{StaticResource PageHeader}" Text="Metas de ahorro"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox Text="{Binding ContributeAmount}" Width="120" Margin="0,0,8,0"/>
+                    <TextBlock Text="CLP" VerticalAlignment="Center" Foreground="{StaticResource Brush.TextSecondary}"/>
+                </StackPanel>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding GoalCards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,16,16" MinHeight="200">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextPrimary}"/>
+                                <ProgressBar Style="{StaticResource GoalProgressBar}" Value="{Binding Progress}" Maximum="1" Margin="0,16,0,8"/>
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Accumulated}" FontSize="22" Foreground="{Binding ColorHex}"/>
+                                        <TextBlock Text="acumulado" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                    </StackPanel>
+                                    <StackPanel HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding Target}" FontSize="16" Foreground="{StaticResource Brush.TextPrimary}" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="objetivo" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,12,0,0">
+                                    <TextBlock Text="{Binding PercentText}" Foreground="{StaticResource Brush.AccentCyan}"/>
+                                    <TextBlock Text="{Binding Remaining}" HorizontalAlignment="Right" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                </Grid>
+                                <TextBlock Text="{Binding TargetDate}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,0" FontSize="11"/>
+                                <TextBlock Text="{Binding Projection}" Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,4,0,12" FontSize="11"/>
+                                <Button Style="{StaticResource AccentButton}" Content="Aportar" HorizontalAlignment="Left"
+                                        Command="{Binding DataContext.ContributeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

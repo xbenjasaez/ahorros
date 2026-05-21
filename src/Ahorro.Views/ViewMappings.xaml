@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:Ahorro.ViewModels.Dashboard;assembly=Ahorro.ViewModels"
+                    xmlns:vmB="clr-namespace:Ahorro.ViewModels.Budget;assembly=Ahorro.ViewModels"
+                    xmlns:vmT="clr-namespace:Ahorro.ViewModels.Transactions;assembly=Ahorro.ViewModels"
+                    xmlns:vmG="clr-namespace:Ahorro.ViewModels.Goals;assembly=Ahorro.ViewModels"
+                    xmlns:vmP="clr-namespace:Ahorro.ViewModels.Payments;assembly=Ahorro.ViewModels"
+                    xmlns:vmR="clr-namespace:Ahorro.ViewModels.Reports;assembly=Ahorro.ViewModels"
+                    xmlns:vmS="clr-namespace:Ahorro.ViewModels.Settings;assembly=Ahorro.ViewModels"
+                    xmlns:v="clr-namespace:Ahorro.Views.Dashboard"
+                    xmlns:vB="clr-namespace:Ahorro.Views.Budget"
+                    xmlns:vT="clr-namespace:Ahorro.Views.Transactions"
+                    xmlns:vG="clr-namespace:Ahorro.Views.Goals"
+                    xmlns:vP="clr-namespace:Ahorro.Views.Payments"
+                    xmlns:vR="clr-namespace:Ahorro.Views.Reports"
+                    xmlns:vS="clr-namespace:Ahorro.Views.Settings">
+    <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><v:DashboardView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmB:BudgetViewModel}"><vB:BudgetView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmT:TransactionsViewModel}"><vT:TransactionsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmG:GoalsViewModel}"><vG:GoalsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmP:PaymentsViewModel}"><vP:PaymentsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmR:ReportsViewModel}"><vR:ReportsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vmS:SettingsViewModel}"><vS:SettingsView/></DataTemplate>
+</ResourceDictionary>

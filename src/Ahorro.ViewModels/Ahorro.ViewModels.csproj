@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Ahorro.ViewModels</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ahorro.Services\Ahorro.Services.csproj" />
+    <ProjectReference Include="..\Ahorro.Models\Ahorro.Models.csproj" />
+    <ProjectReference Include="..\Ahorro.Helpers\Ahorro.Helpers.csproj" />
+  </ItemGroup>
+</Project>

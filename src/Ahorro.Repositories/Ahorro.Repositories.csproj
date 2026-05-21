@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Ahorro.Repositories</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ahorro.Data\Ahorro.Data.csproj" />
+    <ProjectReference Include="..\Ahorro.Models\Ahorro.Models.csproj" />
+  </ItemGroup>
+</Project>

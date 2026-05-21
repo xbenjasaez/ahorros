@@ -1,0 +1,93 @@
+<UserControl x:Class="Ahorro.Views.Transactions.TransactionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.BackgroundApp}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Style="{StaticResource PageHeader}" Text="Movimientos"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="220" Margin="0,0,8,0"
+                         Background="{StaticResource Brush.Card}" Foreground="{StaticResource Brush.TextPrimary}" Padding="10,8"/>
+                <Button Style="{StaticResource PremiumButton}" Content="Filtros" Margin="0,0,8,0"/>
+                <Button Style="{StaticResource AccentButton}" Content="Limpiar filtros" Command="{Binding ClearFiltersCommand}"/>
+            </StackPanel>
+        </Grid>
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding QuickFilters}" Margin="0,0,0,8">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ToggleButton Style="{StaticResource FilterChipToggle}" Content="{Binding Label}"
+                                  IsChecked="{Binding IsActive}" Command="{Binding DataContext.ToggleQuickFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  CommandParameter="{Binding}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="{Binding FilterSummary}" Foreground="{StaticResource Brush.TextSecondary}" VerticalAlignment="Center"/>
+            <ItemsControl ItemsSource="{Binding ActiveFilterChips}" Margin="12,0,0,0">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#1A3A4A" CornerRadius="12" Padding="10,4" Margin="0,0,6,0">
+                            <TextBlock Text="{Binding}" Foreground="{StaticResource Brush.AccentCyan}" FontSize="11"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Style="{StaticResource PremiumButton}" Content="Guardar vista" Command="{Binding SaveFilterPresetCommand}" Margin="12,0,0,0"/>
+        </StackPanel>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+            <DataGrid Grid.Column="0" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedTransaction}"
+                      Style="{StaticResource PremiumDataGrid}" AutoGenerateColumns="False" Margin="0,0,12,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Fecha" Binding="{Binding Date}" Width="90"/>
+                    <DataGridTextColumn Header="Tipo" Binding="{Binding Type}" Width="80"/>
+                    <DataGridTextColumn Header="Descripción" Binding="{Binding Description}" Width="*"/>
+                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="100"/>
+                    <DataGridTextColumn Header="Monto" Binding="{Binding Amount}" Width="100"/>
+                    <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Border Grid.Column="1" Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="Filtros avanzados"/>
+                    <TextBlock Text="Desde" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,4"/>
+                    <DatePicker SelectedDate="{Binding FilterDateFrom}"/>
+                    <TextBlock Text="Hasta" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,4"/>
+                    <DatePicker SelectedDate="{Binding FilterDateTo}"/>
+                    <TextBlock Text="Monto mín." Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,4"/>
+                    <TextBox Text="{Binding FilterMinAmount}"/>
+                    <TextBlock Text="Monto máx." Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,4"/>
+                    <TextBox Text="{Binding FilterMaxAmount}"/>
+                    <Button Style="{StaticResource AccentButton}" Content="Aplicar" Command="{Binding ApplyAdvancedFiltersCommand}" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource KpiCardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="Detalle"/>
+                    <TextBlock Text="Descripción" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,4"/>
+                    <TextBlock Text="{Binding SelectedTransaction.Description}" Foreground="{StaticResource Brush.TextPrimary}" TextWrapping="Wrap"/>
+                    <TextBlock Text="Monto" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,12,0,4"/>
+                    <TextBlock Text="{Binding SelectedTransaction.Amount}" Foreground="{StaticResource Brush.AccentCyan}" FontSize="18"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Style="{StaticResource AccentButton}" Content="Duplicar" Command="{Binding DuplicateSelectedCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource PremiumButton}" Content="Eliminar" Command="{Binding DeleteSelectedCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

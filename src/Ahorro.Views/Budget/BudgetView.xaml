@@ -1,0 +1,78 @@
+<UserControl x:Class="Ahorro.Views.Budget.BudgetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes"
+             Background="{StaticResource Brush.BackgroundApp}">
+    <UserControl.Resources>
+        <conv:StatusToBrushConverter x:Key="StatusBrush"/>
+    </UserControl.Resources>
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Style="{StaticResource PageHeader}" Text="Presupuesto mensual" Margin="0,0,0,16"/>
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Ingreso bruto" Foreground="{StaticResource Brush.TextSecondary}"/>
+                        <TextBlock Text="{Binding GrossIncome}" FontSize="20" Foreground="{StaticResource Brush.AccentCyan}" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Ingreso líquido disponible" Foreground="{StaticResource Brush.TextSecondary}"/>
+                        <TextBlock Text="{Binding NetIncome}" FontSize="20" Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Regla 50 / 30 / 20 (editable)" Foreground="{StaticResource Brush.TextSecondary}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="Necesidades %" Foreground="{StaticResource Brush.TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding NeedsPercent, UpdateSourceTrigger=PropertyChanged}" Width="50" Margin="8,0,16,0"/>
+                            <TextBlock Text="Deseos %" Foreground="{StaticResource Brush.TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding WantsPercent, UpdateSourceTrigger=PropertyChanged}" Width="50" Margin="8,0,16,0"/>
+                            <TextBlock Text="Ahorro %" Foreground="{StaticResource Brush.TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding SavingsPercent, UpdateSourceTrigger=PropertyChanged}" Width="50" Margin="8,0,16,0"/>
+                            <Button Style="{StaticResource AccentButton}" Content="Recalcular" Command="{Binding RecalculateDistributionCommand}" Margin="0,0,8,0"/>
+                            <Button Style="{StaticResource PremiumButton}" Content="Duplicar mes anterior" Command="{Binding DuplicatePreviousMonthCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <DataGrid ItemsSource="{Binding Lines}" Style="{StaticResource PremiumDataGrid}" MinHeight="400"
+                      AutoGenerateColumns="False" CanUserSortColumns="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="120"/>
+                    <DataGridTextColumn Header="Subcategoría" Binding="{Binding Subcategory}" Width="120"/>
+                    <DataGridTextColumn Header="Asignación" Binding="{Binding AllocationMode}" Width="90"/>
+                    <DataGridTextColumn Header="Presupuesto" Binding="{Binding Planned}" Width="110"/>
+                    <DataGridTextColumn Header="Real" Binding="{Binding Actual}" Width="110"/>
+                    <DataGridTextColumn Header="Diferencia" Binding="{Binding Difference}" Width="110"/>
+                    <DataGridTemplateColumn Header="% usado" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <ProgressBar Value="{Binding UsedPercent}" Maximum="120" Height="6" Foreground="{StaticResource Brush.AccentCyan}"/>
+                                    <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0.#}%}" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Estado" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="10" Padding="8,4" Background="#1A2430">
+                                    <TextBlock Text="{Binding StatusLabel}" Foreground="{Binding Status, Converter={StaticResource StatusBrush}}" HorizontalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
