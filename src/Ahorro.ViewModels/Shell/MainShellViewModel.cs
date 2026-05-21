@@ -57,8 +57,3 @@ public partial class MainShellViewModel : ViewModelBase
         _ => typeof(Dashboard.DashboardViewModel)
     };
 }
-
-public interface ILoadable
-{
-    Task LoadAsync();
-}

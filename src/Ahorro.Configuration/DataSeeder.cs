@@ -14,7 +14,10 @@ public static class DataSeeder
     {
         await db.Database.EnsureCreatedAsync(ct);
         if (await db.UserProfiles.AnyAsync(ct))
+        {
+            await RestoreUserContextAsync(db, userContext, ct);
             return;
+        }
 
         var user = new UserProfile
         {
@@ -88,6 +91,28 @@ public static class DataSeeder
         await db.SaveChangesAsync(ct);
 
         userContext.ActivePeriodId = activePeriod.Id;
+    }
+
+    private static async Task RestoreUserContextAsync(AppDbContext db, ICurrentUserContext userContext, CancellationToken ct)
+    {
+        var userId = await db.UserProfiles
+            .Where(u => u.Id == DefaultUserId)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (userId == Guid.Empty)
+            userId = await db.UserProfiles.Select(u => u.Id).FirstAsync(ct);
+
+        userContext.SetUser(userId);
+
+        var today = DateTime.Today;
+        var activePeriodId = await db.BudgetPeriods
+            .Where(p => p.UserProfileId == userId && p.StartDate <= today && p.EndDate >= today)
+            .Select(p => (Guid?)p.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (activePeriodId.HasValue)
+            userContext.ActivePeriodId = activePeriodId;
     }
 
     private static List<BudgetCategory> SeedCategories(Guid userId)
@@ -213,13 +238,16 @@ public static class DataSeeder
     {
         var cat = (string n) => categories.First(c => c.Name == n).Id;
         var visa = methods.First(m => m.Name == "Visa").Id;
+        var debito = methods.First(m => m.Name == "Débito").Id;
+        var efectivo = methods.First(m => m.Name == "Efectivo").Id;
+        var transferencia = methods.First(m => m.Name == "Transferencia").Id;
         db.ScheduledPayments.AddRange(
             new ScheduledPayment { UserProfileId = userId, Name = "Plan celular", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 18_990, DueDate = DateTime.Today.AddDays(4), ReminderDaysBefore = 3, PaymentMethodId = visa, Status = ScheduledPaymentStatus.Upcoming },
-            new ScheduledPayment { UserProfileId = userId, Name = "Internet hogar", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 24_990, DueDate = DateTime.Today.AddDays(8), PaymentMethodId = methods[1].Id, Status = ScheduledPaymentStatus.Pending },
-            new ScheduledPayment { UserProfileId = userId, Name = "Pago tarjeta Visa", CategoryId = cat("Deudas"), EstimatedAmount = 420_000, DueDate = DateTime.Today.AddDays(5), PaymentMethodId = methods[3].Id, Status = ScheduledPaymentStatus.Upcoming },
-            new ScheduledPayment { UserProfileId = userId, Name = "Luz", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 45_000, DueDate = DateTime.Today.AddDays(-2), Status = ScheduledPaymentStatus.Overdue },
-            new ScheduledPayment { UserProfileId = userId, Name = "Netflix", CategoryId = cat("Ocio"), EstimatedAmount = 12_990, DueDate = DateTime.Today.AddDays(12), Status = ScheduledPaymentStatus.Pending },
-            new ScheduledPayment { UserProfileId = userId, Name = "Agua", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 22_000, DueDate = DateTime.Today.AddDays(15), Status = ScheduledPaymentStatus.Pending });
+            new ScheduledPayment { UserProfileId = userId, Name = "Internet hogar", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 24_990, DueDate = DateTime.Today.AddDays(8), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Pago tarjeta Visa", CategoryId = cat("Deudas"), EstimatedAmount = 420_000, DueDate = DateTime.Today.AddDays(5), PaymentMethodId = transferencia, Status = ScheduledPaymentStatus.Upcoming },
+            new ScheduledPayment { UserProfileId = userId, Name = "Luz", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 45_000, DueDate = DateTime.Today.AddDays(-2), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Overdue },
+            new ScheduledPayment { UserProfileId = userId, Name = "Netflix", CategoryId = cat("Ocio"), EstimatedAmount = 12_990, DueDate = DateTime.Today.AddDays(12), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Agua", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 22_000, DueDate = DateTime.Today.AddDays(15), PaymentMethodId = efectivo, Status = ScheduledPaymentStatus.Pending });
     }
 
     private static void SeedDebt(AppDbContext db, Guid userId) =>
@@ -239,25 +267,29 @@ public static class DataSeeder
     private static void SeedTransactions(AppDbContext db, BudgetPeriod[] periods, List<BudgetCategory> categories, List<PaymentMethod> methods, CancellationToken ct)
     {
         var active = periods[2];
+        var goals = db.SavingsGoals.Select(g => g.Id).ToList();
         var rnd = new Random(42);
-        var descs = new[] { "Supermercado", "Restaurante", "Uber", "Farmacia", "Copec", "Spotify", "Mantención auto", "Cine", "Transferencia meta" };
+        var descs = new[] { "Supermercado Lider", "Restaurante sushi", "Uber al trabajo", "Farmacia Ahumada", "Copec combustible", "Spotify familiar", "Mantención auto", "Cine Hoyts", "Aporte meta Casa", "Sueldo mensual", "Freelance diseño", "Pago arriendo", "Gimnasio", "Regalo cumpleaños" };
         for (var i = 0; i < 45; i++)
         {
             var cat = categories[rnd.Next(categories.Count)];
-            var sub = cat.Subcategories.Count > 0 ? cat.Subcategories[rnd.Next(cat.Subcategories.Count)] : null;
+            var sub = cat.Subcategories.Count > 0 ? cat.Subcategories.ElementAt(rnd.Next(cat.Subcategories.Count)) : null;
+            var isIncome = i % 7 == 0;
             db.Transactions.Add(new MoneyTransaction
             {
                 BudgetPeriodId = active.Id,
                 Date = active.StartDate.AddDays(rnd.Next(0, 28)),
-                Type = i % 7 == 0 ? TransactionType.Income : TransactionType.Expense,
+                Type = isIncome ? TransactionType.Income : TransactionType.Expense,
                 Description = descs[rnd.Next(descs.Length)],
                 CategoryId = cat.Id,
                 SubcategoryId = sub?.Id,
-                Amount = rnd.Next(5, 120) * 1000,
+                Amount = isIncome ? rnd.Next(800, 2500) * 1000 : rnd.Next(5, 120) * 1000,
                 PaymentMethodId = methods[rnd.Next(methods.Count)].Id,
-                Status = i % 5 == 0 ? TransactionStatus.Pending : TransactionStatus.Paid,
-                Tag = i % 3 == 0 ? "personal" : null,
-                IsRecurring = i % 4 == 0
+                Status = i % 5 == 0 ? TransactionStatus.Pending : i % 11 == 0 ? TransactionStatus.Cancelled : TransactionStatus.Paid,
+                Note = i % 6 == 0 ? "Nota de seguimiento" : null,
+                Tag = i % 3 == 0 ? "personal" : i % 5 == 0 ? "trabajo" : null,
+                IsRecurring = i % 4 == 0,
+                SavingsGoalId = goals.Count > 0 && i % 6 == 0 ? goals[rnd.Next(goals.Count)] : null
             });
         }
     }

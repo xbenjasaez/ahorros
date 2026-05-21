@@ -19,6 +19,7 @@ public class TransactionRepository
             .Include(t => t.Category)
             .Include(t => t.Subcategory)
             .Include(t => t.PaymentMethod)
+            .Include(t => t.SavingsGoal)
             .AsQueryable();
 
         if (criteria.BudgetPeriodId.HasValue)
@@ -47,6 +48,8 @@ public class TransactionRepository
             query = criteria.HasGoal.Value
                 ? query.Where(t => t.SavingsGoalId != null)
                 : query.Where(t => t.SavingsGoalId == null);
+        if (criteria.SavingsGoalId.HasValue)
+            query = query.Where(t => t.SavingsGoalId == criteria.SavingsGoalId);
         if (criteria.IncomeSourceId.HasValue)
             query = query.Where(t => t.IncomeSourceId == criteria.IncomeSourceId);
         if (!string.IsNullOrWhiteSpace(criteria.SearchText))

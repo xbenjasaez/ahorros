@@ -27,7 +27,7 @@ public partial class DashboardViewModel : ViewModelBase, ILoadable
     public ObservableCollection<ISeries> TrendSeries { get; } = [];
     public ObservableCollection<PaymentListItem> UpcomingPayments { get; } = [];
     public ObservableCollection<GoalCardItem> ActiveGoals { get; } = [];
-    public ObservableCollection<CriticalCategoryItem> CriticalCategories { get; } = [];
+    public ObservableCollection<Models.CriticalCategoryItem> CriticalCategories { get; } = [];
     public ObservableCollection<RecentTransactionItem> RecentTransactions { get; } = [];
     public ObservableCollection<AlertItem> Alerts { get; } = [];
     public string[] ComparisonLabels { get; private set; } = [];
@@ -67,12 +67,12 @@ public partial class DashboardViewModel : ViewModelBase, ILoadable
         PeriodLabel = PeriodOptions.FirstOrDefault(p => p.Id == periodId)?.Label ?? string.Empty;
 
         Kpis.Clear();
-        Kpis.Add(new KpiCardModel { Title = "Ingreso total", Value = ClpFormatter.Format(data.TotalIncome), Subtitle = "Líquido del periodo", AccentColor = "#27D3FF" });
-        Kpis.Add(new KpiCardModel { Title = "Gasto real", Value = ClpFormatter.Format(data.TotalExpenses), Subtitle = "Ejecutado", AccentColor = "#FFB84D" });
-        Kpis.Add(new KpiCardModel { Title = "Ahorro acumulado", Value = ClpFormatter.Format(data.TotalSavings), Subtitle = "En metas y categoría", AccentColor = "#35E0A1" });
-        Kpis.Add(new KpiCardModel { Title = "Saldo libre", Value = ClpFormatter.Format(data.FreeBalance), Subtitle = "Disponible estimado", AccentColor = "#27D3FF" });
-        Kpis.Add(new KpiCardModel { Title = "Deuda pagada", Value = ClpFormatter.Format(data.DebtPaid), Subtitle = "Este periodo", AccentColor = "#93A4BD" });
-        Kpis.Add(new KpiCardModel { Title = "Ejecución presupuesto", Value = ClpFormatter.FormatPercent(data.ExecutionPercent), Subtitle = "Del planificado", AccentColor = "#FFB84D" });
+        Kpis.Add(CreateKpi("Ingreso total", ClpFormatter.Format(data.TotalIncome), "Líquido del periodo", "#27D3FF"));
+        Kpis.Add(CreateKpi("Gasto real", ClpFormatter.Format(data.TotalExpenses), "Ejecutado", "#FFB84D"));
+        Kpis.Add(CreateKpi("Ahorro acumulado", ClpFormatter.Format(data.TotalSavings), "En metas y categoría", "#35E0A1"));
+        Kpis.Add(CreateKpi("Saldo libre", ClpFormatter.Format(data.FreeBalance), "Disponible estimado", "#27D3FF"));
+        Kpis.Add(CreateKpi("Deuda pagada", ClpFormatter.Format(data.DebtPaid), "Este periodo", "#93A4BD"));
+        Kpis.Add(CreateKpi("Ejecución presupuesto", ClpFormatter.FormatPercent(data.ExecutionPercent), "Del planificado", "#FFB84D"));
 
         ComparisonLabels = data.CategoryComparisons.Select(c => c.Category).ToArray();
         ComparisonSeries.Clear();
@@ -100,12 +100,22 @@ public partial class DashboardViewModel : ViewModelBase, ILoadable
         foreach (var g in data.ActiveGoals)
         {
             var pct = g.TargetAmount > 0 ? (double)(g.AccumulatedAmount / g.TargetAmount * 100) : 0;
-            ActiveGoals.Add(new GoalCardItem { Id = g.Id, Name = g.Name, Accumulated = ClpFormatter.Format(g.AccumulatedAmount), Target = ClpFormatter.Format(g.TargetAmount), PercentText = $"{pct:0.#}%", Progress = Math.Min(1, pct / 100), ColorHex = g.ColorHex });
+            ActiveGoals.Add(new GoalCardItem
+            {
+                Id = g.Id,
+                Name = g.Name,
+                Accumulated = ClpFormatter.Format(g.AccumulatedAmount),
+                Target = ClpFormatter.Format(g.TargetAmount),
+                PercentText = $"{pct:0.#}%",
+                Progress = Math.Min(1, pct / 100),
+                ColorHex = g.ColorHex,
+                AccentBrush = BrushHelper.FromHex(g.ColorHex)
+            });
         }
 
         CriticalCategories.Clear();
         foreach (var c in data.CriticalCategories)
-            CriticalCategories.Add(new CriticalCategoryItem { Category = c.Category, UsedPercent = $"{c.UsedPercent:0.#}%", Status = c.Status });
+            CriticalCategories.Add(new Models.CriticalCategoryItem { Category = c.Category, UsedPercent = $"{c.UsedPercent:0.#}%", Status = c.Status });
 
         RecentTransactions.Clear();
         foreach (var t in data.RecentTransactions)
@@ -118,4 +128,14 @@ public partial class DashboardViewModel : ViewModelBase, ILoadable
 
     [RelayCommand]
     private async Task Refresh() => await LoadAsync();
+
+    private static KpiCardModel CreateKpi(string title, string value, string subtitle, string accentHex) =>
+        new()
+        {
+            Title = title,
+            Value = value,
+            Subtitle = subtitle,
+            AccentColor = accentHex,
+            AccentBrush = BrushHelper.FromHex(accentHex)
+        };
 }

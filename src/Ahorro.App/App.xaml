@@ -5,9 +5,18 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Generic.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Colors.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Typography.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Effects.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Controls.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/ViewMappings.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <conv:StatusToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="StatusToBrush"/>
+            <conv:HexToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="HexToBrush"/>
+            <conv:BoolToVisibilityConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="BoolToVis"/>
+            <conv:UsedPercentToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="UsedPercentToBrush"/>
+            <conv:BudgetStatusToRowBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="BudgetStatusToRow"/>
+            <conv:TransactionStatusToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="TxStatusToBrush"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

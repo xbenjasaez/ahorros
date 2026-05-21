@@ -25,6 +25,7 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
 
     public async Task LoadAsync()
     {
+        StatusFilter ??= "Todos";
         IsBusy = true;
         var list = await _payments.GetUpcomingAsync(60);
         PaymentItems.Clear();

@@ -6,9 +6,4 @@
         <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Effects.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/Ahorro.Themes;component/Controls.xaml"/>
     </ResourceDictionary.MergedDictionaries>
-    <conv:StatusToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="StatusToBrush"/>
-    <conv:HexToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="HexToBrush"/>
-    <conv:BoolToVisibilityConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="BoolToVis"/>
-    <conv:UsedPercentToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="UsedPercentToBrush"/>
-    <conv:BudgetStatusToRowBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="BudgetStatusToRow"/>
 </ResourceDictionary>

@@ -7,6 +7,7 @@
     <RootNamespace>Ahorro.Views</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ahorro.Models\Ahorro.Models.csproj" />
     <ProjectReference Include="..\Ahorro.ViewModels\Ahorro.ViewModels.csproj" />
     <ProjectReference Include="..\Ahorro.Themes\Ahorro.Themes.csproj" />
     <ProjectReference Include="..\Ahorro.Charts\Ahorro.Charts.csproj" />

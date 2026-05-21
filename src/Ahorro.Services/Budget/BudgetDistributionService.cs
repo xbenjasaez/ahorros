@@ -1,4 +1,5 @@
 using Ahorro.Data;
+using Ahorro.Models.Entities;
 using Ahorro.Models.Enums;
 using Ahorro.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;

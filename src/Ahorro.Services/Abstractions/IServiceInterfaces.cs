@@ -12,9 +12,22 @@ public interface IBudgetPeriodService
     Task<BudgetPeriod?> GetByIdAsync(Guid id, CancellationToken ct = default);
 }
 
+public record BudgetPeriodSummary(
+    decimal GrossIncome,
+    decimal NetIncome,
+    decimal TotalPlanned,
+    decimal TotalActual,
+    decimal Remaining,
+    decimal ExecutionPercent);
+
 public interface IBudgetService
 {
     Task<List<BudgetAllocation>> GetAllocationsAsync(Guid periodId, CancellationToken ct = default);
+    Task<BudgetPeriodSummary> GetSummaryAsync(Guid periodId, CancellationToken ct = default);
+    Task<List<BudgetCategory>> GetCategoriesAsync(CancellationToken ct = default);
+    Task<BudgetCategory> AddCategoryAsync(string name, BudgetGroup group, Guid periodId, CancellationToken ct = default);
+    Task<BudgetSubcategory> AddSubcategoryAsync(Guid categoryId, string name, Guid periodId, CancellationToken ct = default);
+    Task UpdatePeriodIncomeAsync(Guid periodId, decimal grossIncome, decimal netIncome, CancellationToken ct = default);
     Task DuplicatePreviousPeriodAsync(Guid periodId, CancellationToken ct = default);
     Task RecalculateStatusesAsync(Guid periodId, CancellationToken ct = default);
 }
@@ -27,15 +40,41 @@ public interface IBudgetDistributionService
 public interface ITransactionService
 {
     Task<List<MoneyTransaction>> GetFilteredAsync(FilterCriteria criteria, CancellationToken ct = default);
+    Task<MoneyTransaction?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<List<PaymentMethod>> GetPaymentMethodsAsync(CancellationToken ct = default);
     Task<MoneyTransaction> AddAsync(MoneyTransaction tx, CancellationToken ct = default);
+    Task<MoneyTransaction> UpdateAsync(MoneyTransaction tx, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task<MoneyTransaction?> DuplicateAsync(Guid id, CancellationToken ct = default);
+    Task MarkPaidAsync(Guid id, CancellationToken ct = default);
+    Task SetRecurringAsync(Guid id, bool isRecurring, CancellationToken ct = default);
 }
+
+public record GoalsDashboardSummary(
+    decimal TotalSaved,
+    int ActiveGoalsCount,
+    decimal TotalTarget,
+    decimal TotalRemaining,
+    string ProjectionLabel);
+
+public record SavingsGoalUpdate(
+    string Name,
+    decimal TargetAmount,
+    DateTime? TargetDate,
+    Guid? CategoryId,
+    string ColorHex,
+    string IconKey,
+    bool AutoContributeFromBudget);
 
 public interface ISavingsGoalService
 {
     Task<List<SavingsGoal>> GetActiveGoalsAsync(CancellationToken ct = default);
+    Task<GoalsDashboardSummary> GetSummaryAsync(CancellationToken ct = default);
+    Task<SavingsGoal?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<SavingsGoal> CreateAsync(SavingsGoalUpdate data, CancellationToken ct = default);
+    Task UpdateAsync(Guid id, SavingsGoalUpdate data, CancellationToken ct = default);
     Task ContributeAsync(Guid goalId, decimal amount, CancellationToken ct = default);
+    Task ArchiveAsync(Guid goalId, CancellationToken ct = default);
 }
 
 public interface IScheduledPaymentService

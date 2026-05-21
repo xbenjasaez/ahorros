@@ -3,6 +3,7 @@ using Ahorro.Configuration;
 using Ahorro.Data;
 using Ahorro.Exports;
 using Ahorro.Services;
+using Ahorro.ViewModels;
 using Ahorro.Models.Abstractions;
 using Ahorro.Services.Abstractions;
 using Ahorro.ViewModels.Shell;
@@ -18,18 +19,31 @@ public partial class App : Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        HostApp = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            .ConfigureServices(ConfigureServices)
-            .Build();
+        try
+        {
+            HostApp = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+                .ConfigureServices(ConfigureServices)
+                .Build();
 
-        await InitializeDatabaseAsync();
+            await InitializeDatabaseAsync();
 
-        var main = HostApp.Services.GetRequiredService<MainWindow>();
-        main.Show();
+            var main = HostApp.Services.GetRequiredService<MainWindow>();
+            main.Show();
 
-        var shell = HostApp.Services.GetRequiredService<MainShellViewModel>();
-        if (shell.CurrentViewModel is ViewModels.ILoadable loadable)
-            await loadable.LoadAsync();
+            var shell = HostApp.Services.GetRequiredService<MainShellViewModel>();
+            if (shell.CurrentViewModel is ILoadable loadable)
+                await loadable.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            var detail = ex.InnerException?.Message ?? ex.Message;
+            MessageBox.Show(
+                $"No se pudo iniciar la aplicación:\n\n{detail}",
+                "Ahorro",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(1);
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)

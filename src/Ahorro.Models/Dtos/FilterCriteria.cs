@@ -16,6 +16,7 @@ public class FilterCriteria
     public string? SearchText { get; set; }
     public bool? IsRecurring { get; set; }
     public bool? HasGoal { get; set; }
+    public Guid? SavingsGoalId { get; set; }
     public Guid? IncomeSourceId { get; set; }
     public bool? OverdueOnly { get; set; }
     public bool? ExceededOnly { get; set; }

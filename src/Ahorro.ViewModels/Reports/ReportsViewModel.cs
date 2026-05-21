@@ -58,7 +58,7 @@ public partial class ReportsViewModel : ViewModelBase, ILoadable
     [RelayCommand]
     private async Task ExportExcel()
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ahorro");
+        var folder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ahorro");
         if (_user.ActivePeriodId.HasValue)
             await _excel.ExportBudgetAsync(_user.ActivePeriodId.Value, folder);
     }
@@ -68,7 +68,7 @@ public partial class ReportsViewModel : ViewModelBase, ILoadable
     {
         if (!_user.ActivePeriodId.HasValue) return;
         var data = await _reports.LoadAsync(_user.ActivePeriodId.Value);
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ahorro");
+        var folder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ahorro");
         await _pdf.ExportReportAsync(data, folder);
     }
 }

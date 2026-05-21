@@ -40,17 +40,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    public static IServiceCollection AddAhorroViewModels(this IServiceCollection services)
-    {
-        services.AddSingleton<ViewModels.Shell.MainShellViewModel>();
-        services.AddTransient<ViewModels.Dashboard.DashboardViewModel>();
-        services.AddTransient<ViewModels.Budget.BudgetViewModel>();
-        services.AddTransient<ViewModels.Transactions.TransactionsViewModel>();
-        services.AddTransient<ViewModels.Goals.GoalsViewModel>();
-        services.AddTransient<ViewModels.Payments.PaymentsViewModel>();
-        services.AddTransient<ViewModels.Reports.ReportsViewModel>();
-        services.AddTransient<ViewModels.Settings.SettingsViewModel>();
-        return services;
-    }
 }

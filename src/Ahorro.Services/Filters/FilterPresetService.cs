@@ -3,6 +3,7 @@ using Ahorro.Data;
 using Ahorro.Models.Dtos;
 using Ahorro.Models.Entities;
 using Ahorro.Models.Abstractions;
+using Ahorro.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ahorro.Services.Filters;

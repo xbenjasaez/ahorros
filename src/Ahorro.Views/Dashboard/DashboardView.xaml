@@ -3,6 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              Background="{StaticResource Brush.BackgroundApp}">
+    <UserControl.Resources>
+        <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
+    </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel>
             <Grid Margin="0,0,0,20">
@@ -28,7 +31,7 @@
                         <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0">
                             <StackPanel>
                                 <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="{StaticResource FontSize.Caption}" Text="{Binding Title}"/>
-                                <TextBlock Foreground="{Binding AccentColor}" FontSize="22" FontWeight="Bold" Text="{Binding Value}" Margin="0,6,0,0"/>
+                                <TextBlock Foreground="{Binding AccentBrush}" FontSize="22" FontWeight="Bold" Text="{Binding Value}" Margin="0,6,0,0"/>
                                 <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="{StaticResource FontSize.Caption}" Text="{Binding Subtitle}" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
@@ -126,7 +129,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="0,4">
-                                        <TextBlock Text="{Binding Category}"/>
+                                        <TextBlock Text="{Binding Category}" Foreground="{StaticResource Brush.TextPrimary}"/>
                                         <TextBlock Text="{Binding UsedPercent}" HorizontalAlignment="Right" Foreground="{StaticResource Brush.AlertAmber}"/>
                                     </Grid>
                                 </DataTemplate>

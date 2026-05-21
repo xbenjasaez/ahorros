@@ -1,50 +1,305 @@
 <UserControl x:Class="Ahorro.Views.Goals.GoalsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes"
              Background="{StaticResource Brush.BackgroundApp}">
-    <ScrollViewer Padding="24">
-        <StackPanel>
-            <Grid Margin="0,0,0,20">
-                <TextBlock Style="{StaticResource PageHeader}" Text="Metas de ahorro"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBox Text="{Binding ContributeAmount}" Width="120" Margin="0,0,8,0"/>
-                    <TextBlock Text="CLP" VerticalAlignment="Center" Foreground="{StaticResource Brush.TextSecondary}"/>
-                </StackPanel>
-            </Grid>
-            <ItemsControl ItemsSource="{Binding GoalCards}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,16,16" MinHeight="200">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+
+            <Style x:Key="GoalCardShell" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="MinHeight" Value="340"/>
+            </Style>
+
+            <Style x:Key="GoalIconBadge" TargetType="Border">
+                <Setter Property="Width" Value="52"/>
+                <Setter Property="Height" Value="52"/>
+                <Setter Property="CornerRadius" Value="26"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+
+            <Style x:Key="SummaryHeroCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="22"/>
+                <Setter Property="MinHeight" Value="120"/>
+            </Style>
+
+            <Style x:Key="ColorSwatchToggle" TargetType="RadioButton">
+                <Setter Property="Width" Value="28"/>
+                <Setter Property="Height" Value="28"/>
+                <Setter Property="Margin" Value="0,0,8,0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Grid>
+                                <Ellipse x:Name="Ring" Width="28" Height="28" Stroke="{StaticResource Brush.BorderSubtle}" StrokeThickness="2" Fill="Transparent"/>
+                                <Ellipse x:Name="Dot" Width="20" Height="20" Fill="{Binding Swatch, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Ring" Property="Stroke" Value="{StaticResource Brush.AccentCyan}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="380"/>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Grid Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PageHeader}" Text="Metas de ahorro"/>
+                        <TextBlock Foreground="{StaticResource Brush.TextSecondary}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                   Text="Visualiza tu progreso emocional hacia lo que importa. Cada aporte te acerca al hito."/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Button Style="{StaticResource GhostButton}" Content="Actualizar" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource AccentButton}" Content="+ Nueva meta" Command="{Binding OpenNewGoalCommand}"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SummaryHeroCard}" Margin="0,0,14,0"
+                            Background="#121A24" BorderBrush="#2A3F55">
+                        <Grid>
                             <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextPrimary}"/>
-                                <ProgressBar Style="{StaticResource GoalProgressBar}" Value="{Binding Progress}" Maximum="1" Margin="0,16,0,8"/>
-                                <Grid>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Accumulated}" FontSize="22" Foreground="{Binding ColorHex}"/>
-                                        <TextBlock Text="acumulado" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}"/>
-                                    </StackPanel>
-                                    <StackPanel HorizontalAlignment="Right">
-                                        <TextBlock Text="{Binding Target}" FontSize="16" Foreground="{StaticResource Brush.TextPrimary}" HorizontalAlignment="Right"/>
-                                        <TextBlock Text="objetivo" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}" HorizontalAlignment="Right"/>
-                                    </StackPanel>
-                                </Grid>
-                                <Grid Margin="0,12,0,0">
-                                    <TextBlock Text="{Binding PercentText}" Foreground="{StaticResource Brush.AccentCyan}"/>
-                                    <TextBlock Text="{Binding Remaining}" HorizontalAlignment="Right" Foreground="{StaticResource Brush.TextSecondary}"/>
-                                </Grid>
-                                <TextBlock Text="{Binding TargetDate}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,8,0,0" FontSize="11"/>
-                                <TextBlock Text="{Binding Projection}" Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,4,0,12" FontSize="11"/>
-                                <Button Style="{StaticResource AccentButton}" Content="Aportar" HorizontalAlignment="Left"
-                                        Command="{Binding DataContext.ContributeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"/>
+                                <TextBlock Text="TOTAL AHORRADO" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="{StaticResource FontSize.Caption}"/>
+                                <TextBlock Text="{Binding TotalSaved}" FontSize="36" FontWeight="Bold"
+                                           Foreground="{StaticResource Brush.AccentCyan}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding TotalRemainingLabel}" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="13" Margin="0,6,0,0"/>
                             </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </ScrollViewer>
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TotalTargetLabel}" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="12" HorizontalAlignment="Right"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource SummaryHeroCard}" Margin="0,0,14,0">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="METAS ACTIVAS" Foreground="{StaticResource Brush.TextSecondary}"
+                                       FontSize="{StaticResource FontSize.Caption}"/>
+                            <TextBlock Text="{Binding ActiveGoalsLabel}" FontSize="26" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.TextPrimary}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SummaryHeroCard}">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="PROYECCIÓN" Foreground="{StaticResource Brush.TextSecondary}"
+                                       FontSize="{StaticResource FontSize.Caption}"/>
+                            <TextBlock Text="{Binding PortfolioProjection}" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.PositiveGreen}" TextWrapping="Wrap"
+                                       Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Background="#121A22" BorderBrush="{StaticResource Brush.AccentCyan}" BorderThickness="1"
+                        CornerRadius="12" Padding="16" Margin="0,0,0,20"
+                        Visibility="{Binding IsContributePanelOpen, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ContributePanelTitle}" Foreground="{StaticResource Brush.TextPrimary}"
+                                       FontWeight="SemiBold" FontSize="15"/>
+                            <TextBlock Text="Registra un aporte manual y actualiza tu barra al instante."
+                                       Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding ContributeAmount, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="140" Margin="12,0,8,0" VerticalAlignment="Center"/>
+                        <Button Grid.Column="2" Style="{StaticResource AccentButton}" Content="Confirmar aporte"
+                                Command="{Binding ContributeCommand}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Button Grid.Column="3" Style="{StaticResource GhostButton}" Content="Cerrar"
+                                Command="{Binding CloseContributeCommand}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.PositiveGreen}"
+                           Margin="0,0,0,12" Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
+
+                <ItemsControl ItemsSource="{Binding GoalCards}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource GoalCardShell}" Margin="0,0,16,16">
+                                <Grid>
+                                    <Border Background="{Binding GlowBrush}" CornerRadius="12" Opacity="0.55"
+                                            Margin="1" IsHitTestVisible="False"/>
+                                    <StackPanel Margin="22">
+                                        <Grid Margin="0,0,0,18">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Style="{StaticResource GoalIconBadge}"
+                                                        Background="#141C26" BorderBrush="{Binding AccentBrush}">
+                                                    <TextBlock Text="{Binding IconGlyph}" FontSize="22"
+                                                               Foreground="{Binding AccentBrush}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource Brush.TextPrimary}"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                        <TextBlock Text="{Binding TargetDate}" FontSize="11"
+                                                                   Foreground="{StaticResource Brush.TextSecondary}"/>
+                                                        <TextBlock Text=" · " Foreground="{StaticResource Brush.TextSecondary}" FontSize="11"/>
+                                                        <TextBlock Text="{Binding DaysLeftLabel}" FontSize="11"
+                                                                   Foreground="{Binding AccentBrush}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                       Text="{Binding PercentText}" FontSize="28" FontWeight="Bold"
+                                                       Foreground="{Binding AccentBrush}"/>
+                                        </Grid>
+
+                                        <ProgressBar Style="{StaticResource GoalHeroProgressBar}"
+                                                     Value="{Binding Progress}" Maximum="1"
+                                                     Foreground="{Binding AccentBrush}"
+                                                     Background="{Binding TrackBrush}" Margin="0,0,0,10"/>
+
+                                        <Grid Margin="0,0,0,14">
+                                            <StackPanel>
+                                                <TextBlock Text="ACUMULADO" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                                <TextBlock Text="{Binding Accumulated}" FontSize="24" FontWeight="SemiBold"
+                                                           Foreground="{Binding AccentBrush}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="OBJETIVO" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Target}" FontSize="18" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource Brush.TextPrimary}"
+                                                           HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <StackPanel HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding RemainingLabel}" FontSize="10"
+                                                           Foreground="{StaticResource Brush.TextSecondary}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Remaining}" FontSize="18" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource Brush.AlertAmber}"
+                                                           HorizontalAlignment="Right" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Border Background="#141C26" CornerRadius="8" Padding="10,8" Margin="0,0,0,12">
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="◆" Foreground="{Binding AccentBrush}" Margin="0,0,6,0" FontSize="10"/>
+                                                    <TextBlock Text="{Binding Projection}" Foreground="{StaticResource Brush.TextPrimary}"
+                                                               FontSize="12" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                                            Visibility="{Binding HasCategoryLink, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="Presupuesto:" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding CategoryName}" Foreground="{StaticResource Brush.AccentCyan}"
+                                                               FontSize="11" Margin="4,0,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource AccentButton}" Content="Aportar"
+                                                    Command="{Binding DataContext.OpenContributeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" Margin="0,0,8,0"/>
+                                            <Button Style="{StaticResource GhostButton}" Content="Editar"
+                                                    Command="{Binding DataContext.OpenEditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" Margin="0,0,8,0"/>
+                                            <Button Style="{StaticResource DangerButton}" Content="Archivar"
+                                                    Command="{Binding DataContext.ArchiveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Column="1" Style="{StaticResource KpiCardBorder}" Margin="16,0,0,0" Padding="20"
+                Visibility="{Binding IsEditorOpen, Converter={StaticResource BoolToVis}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding EditorTitle}"/>
+                    <TextBlock Text="Nombre" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Monto objetivo (CLP)" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding EditTargetInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Fecha objetivo (yyyy-MM-dd)" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding EditDateInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Color de la meta" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,6"/>
+                    <ItemsControl ItemsSource="{Binding ColorPresets}" Margin="0,0,0,12">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" Width="32" Height="32" Margin="0,0,8,0" Cursor="Hand">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Ellipse Width="24" Height="24" Fill="{Binding Swatch}"/>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding EditColor.Hex}" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Icono" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
+                    <ComboBox ItemsSource="{Binding IconOptions}" SelectedItem="{Binding EditIcon}"
+                              DisplayMemberPath="Label" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Vincular a categoría de presupuesto" Foreground="{StaticResource Brush.TextSecondary}"
+                               FontSize="11" Margin="0,0,0,4"/>
+                    <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding EditCategory}"
+                              DisplayMemberPath="Name" Margin="0,0,0,12"/>
+
+                    <CheckBox Content="Auto-aportar desde categoría vinculada" IsChecked="{Binding EditAutoFromBudget}"
+                              Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,16"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource AccentButton}" Content="Guardar" Command="{Binding SaveGoalCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource GhostButton}" Content="Cancelar" Command="{Binding CancelEditCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
 </UserControl>

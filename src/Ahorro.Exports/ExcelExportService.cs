@@ -1,4 +1,5 @@
 using Ahorro.Helpers;
+using Ahorro.Models.Enums;
 using Ahorro.Models.Entities;
 using Ahorro.Services.Abstractions;
 using ClosedXML.Excel;
@@ -16,16 +17,24 @@ public class ExcelExportService : IExcelExportService
         ws.Cell(1, 1).Value = "Fecha";
         ws.Cell(1, 2).Value = "Tipo";
         ws.Cell(1, 3).Value = "Descripción";
-        ws.Cell(1, 4).Value = "Monto CLP";
-        ws.Cell(1, 5).Value = "Estado";
+        ws.Cell(1, 4).Value = "Categoría";
+        ws.Cell(1, 5).Value = "Subcategoría";
+        ws.Cell(1, 6).Value = "Método";
+        ws.Cell(1, 7).Value = "Monto CLP";
+        ws.Cell(1, 8).Value = "Estado";
+        ws.Cell(1, 9).Value = "Etiquetas";
         var row = 2;
         foreach (var t in items)
         {
             ws.Cell(row, 1).Value = t.Date.ToString("dd/MM/yyyy");
-            ws.Cell(row, 2).Value = t.Type.ToString();
+            ws.Cell(row, 2).Value = TransactionLabels.Type(t.Type);
             ws.Cell(row, 3).Value = t.Description;
-            ws.Cell(row, 4).Value = t.Amount;
-            ws.Cell(row, 5).Value = t.Status.ToString();
+            ws.Cell(row, 4).Value = t.Category?.Name ?? "";
+            ws.Cell(row, 5).Value = t.Subcategory?.Name ?? "";
+            ws.Cell(row, 6).Value = t.PaymentMethod?.Name ?? "";
+            ws.Cell(row, 7).Value = t.Amount;
+            ws.Cell(row, 8).Value = TransactionLabels.Status(t.Status);
+            ws.Cell(row, 9).Value = string.Join(", ", new[] { t.Tag, t.IsRecurring ? "recurrente" : null }.Where(x => x != null)!);
             row++;
         }
         wb.SaveAs(path);
