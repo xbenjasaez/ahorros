@@ -437,8 +437,7 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
     private async Task Export()
     {
         SyncCriteriaFromUi();
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ahorro");
-        var path = await _export.ExportTransactionsAsync(_lastResult, folder);
+        var path = await _export.ExportTransactionsAsync(_lastResult, ExportPaths.DefaultFolder);
         StatusMessage = $"Exportado: {path}";
     }
 

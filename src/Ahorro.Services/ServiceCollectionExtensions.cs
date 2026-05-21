@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ISettingsService, SettingsService>();
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddScoped<IFilterPresetService, FilterPresetService>();
 
         return services;

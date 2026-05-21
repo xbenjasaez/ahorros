@@ -141,10 +141,41 @@ public class PaymentListItem
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Category { get; init; } = string.Empty;
+    public string PaymentMethod { get; init; } = string.Empty;
     public string Amount { get; init; } = string.Empty;
+    public DateTime DueDateValue { get; init; }
     public string DueDate { get; init; } = string.Empty;
+    public string DaysLabel { get; init; } = string.Empty;
+    public int DaysUntilDue { get; init; }
+    public string FrequencyLabel { get; init; } = string.Empty;
+    public string ReminderLabel { get; init; } = string.Empty;
+    public string LastPaidLabel { get; init; } = string.Empty;
+    public bool IsRecurring { get; init; }
     public ScheduledPaymentStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
+    public string StatusColor { get; init; } = "#93A4BD";
+    public Brush StatusBrush { get; init; } = Brushes.Gray;
+    public Brush CategoryBrush { get; init; } = Brushes.Cyan;
+    public bool CanRegister { get; init; }
+}
+
+public class PaymentStatusFilterItem
+{
+    public ScheduledPaymentStatus? Status { get; init; }
+    public string Label { get; init; } = string.Empty;
+}
+
+public class PaymentCalendarDayItem
+{
+    public DateTime Date { get; init; }
+    public int DayNumber { get; init; }
+    public string WeekdayShort { get; init; } = string.Empty;
+    public bool IsToday { get; init; }
+    public bool IsCurrentMonth { get; init; }
+    public bool HasPayments { get; init; }
+    public int PaymentCount { get; init; }
+    public string Tooltip { get; init; } = string.Empty;
+    public Brush AccentBrush { get; init; } = Brushes.Transparent;
 }
 
 public class FilterChipItem
@@ -178,4 +209,93 @@ public class CriticalCategoryItem
     public string Category { get; init; } = string.Empty;
     public string UsedPercent { get; init; } = string.Empty;
     public BudgetLineStatus Status { get; init; }
+}
+
+public class ReportTopExpenseItem
+{
+    public int Rank { get; init; }
+    public string Description { get; init; } = string.Empty;
+    public string Amount { get; init; } = string.Empty;
+}
+
+public class ReportExceededItem
+{
+    public string Category { get; init; } = string.Empty;
+    public string Planned { get; init; } = string.Empty;
+    public string Actual { get; init; } = string.Empty;
+    public string UsedPercent { get; init; } = string.Empty;
+    public Brush AccentBrush { get; init; } = Brushes.Transparent;
+}
+
+public class SettingsCategoryItem
+{
+    public Guid Id { get; init; }
+    public string Name { get; set; } = string.Empty;
+    public string GroupLabel { get; init; } = string.Empty;
+    public BudgetGroup Group { get; init; }
+    public string ColorHex { get; set; } = "#27D3FF";
+    public Brush ColorBrush { get; init; } = Brushes.Cyan;
+    public string IconKey { get; set; } = "folder";
+    public bool AllowRollover { get; set; }
+    public bool IsActive { get; init; }
+    public int SortOrder { get; init; }
+    public int SubcategoryCount { get; init; }
+    public string StatusLabel => IsActive ? "Activa" : "Inactiva";
+}
+
+public class SettingsSubcategoryItem
+{
+    public Guid Id { get; init; }
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; init; }
+    public string StatusLabel => IsActive ? "Activa" : "Inactiva";
+}
+
+public class SettingsPaymentMethodItem
+{
+    public Guid Id { get; init; }
+    public string Name { get; set; } = string.Empty;
+    public PaymentMethodType Type { get; set; }
+    public string TypeLabel { get; init; } = string.Empty;
+    public Guid? CreditCardAccountId { get; set; }
+    public string CreditCardName { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
+    public string StatusLabel => IsActive ? "Activo" : "Inactivo";
+}
+
+public class SettingsUserItem
+{
+    public Guid Id { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+    public string? Email { get; init; }
+    public bool IsCurrent { get; init; }
+    public bool IsLocal { get; init; }
+    public string Badge => IsCurrent ? "Activo" : IsLocal ? "Local" : "Perfil";
+}
+
+public class SettingsExportHistoryItem
+{
+    public Guid Id { get; init; }
+    public string TypeLabel { get; init; } = string.Empty;
+    public string FileName { get; init; } = string.Empty;
+    public string CreatedLabel { get; init; } = string.Empty;
+    public string FilePath { get; init; } = string.Empty;
+}
+
+public class ThemeVariantOption
+{
+    public string Id { get; init; } = "dark-premium";
+    public string Label { get; init; } = string.Empty;
+}
+
+public class AccentColorOption
+{
+    public string Hex { get; init; } = "#27D3FF";
+    public Brush Swatch { get; init; } = Brushes.Cyan;
+}
+
+public class CurrencyOption
+{
+    public string Code { get; init; } = "CLP";
+    public string Label { get; init; } = string.Empty;
 }

@@ -67,6 +67,8 @@
                                    Text="Visualiza tu progreso emocional hacia lo que importa. Cada aporte te acerca al hito."/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Button Style="{StaticResource GhostButton}" Content="Excel" Command="{Binding ExportExcelCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource GhostButton}" Content="PDF" Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"/>
                         <Button Style="{StaticResource GhostButton}" Content="Actualizar" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
                         <Button Style="{StaticResource AccentButton}" Content="+ Nueva meta" Command="{Binding OpenNewGoalCommand}"/>
                     </StackPanel>

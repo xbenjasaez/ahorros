@@ -10,6 +10,7 @@
     <PackageReference Include="QuestPDF" Version="2024.12.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ahorro.Data\Ahorro.Data.csproj" />
     <ProjectReference Include="..\Ahorro.Models\Ahorro.Models.csproj" />
     <ProjectReference Include="..\Ahorro.Helpers\Ahorro.Helpers.csproj" />
     <ProjectReference Include="..\Ahorro.Services\Ahorro.Services.csproj" />

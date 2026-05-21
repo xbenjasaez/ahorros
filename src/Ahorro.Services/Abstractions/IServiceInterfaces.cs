@@ -77,9 +77,30 @@ public interface ISavingsGoalService
     Task ArchiveAsync(Guid goalId, CancellationToken ct = default);
 }
 
+public record ScheduledPaymentSummary(
+    int TotalActive,
+    int OverdueCount,
+    int UpcomingCount,
+    int PendingCount,
+    decimal TotalDueThisMonth);
+
+public record ScheduledPaymentUpsert(
+    string Name,
+    Guid CategoryId,
+    decimal EstimatedAmount,
+    DateTime DueDate,
+    IncomeFrequency Frequency,
+    int ReminderDaysBefore,
+    Guid PaymentMethodId);
+
 public interface IScheduledPaymentService
 {
+    Task<ScheduledPaymentSummary> GetSummaryAsync(CancellationToken ct = default);
+    Task<List<ScheduledPayment>> GetAllAsync(DateTime? from = null, DateTime? to = null, CancellationToken ct = default);
     Task<List<ScheduledPayment>> GetUpcomingAsync(int days = 30, CancellationToken ct = default);
+    Task<ScheduledPayment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<ScheduledPayment> CreateAsync(ScheduledPaymentUpsert data, CancellationToken ct = default);
+    Task UpdateAsync(Guid id, ScheduledPaymentUpsert data, CancellationToken ct = default);
     Task RegisterPaymentAsync(Guid paymentId, CancellationToken ct = default);
     Task RefreshStatusesAsync(CancellationToken ct = default);
 }
@@ -98,18 +119,54 @@ public interface ISettingsService
 {
     Task<UserProfile> GetProfileAsync(CancellationToken ct = default);
     Task SaveProfileAsync(UserProfile profile, CancellationToken ct = default);
-    Task<List<BudgetCategory>> GetCategoriesAsync(CancellationToken ct = default);
+    Task<List<UserProfile>> GetProfilesAsync(CancellationToken ct = default);
+    Task SwitchProfileAsync(Guid userId, CancellationToken ct = default);
+    Task<UserPreferences> GetPreferencesAsync(CancellationToken ct = default);
+    Task SavePreferencesAsync(UserPreferences preferences, CancellationToken ct = default);
+    Task<AlertRule> GetGlobalAlertRuleAsync(CancellationToken ct = default);
+    Task SaveGlobalAlertRuleAsync(int attentionThreshold, int limitThreshold, bool isEnabled, CancellationToken ct = default);
+    Task<List<BudgetCategory>> GetCategoriesAsync(bool includeInactive = false, CancellationToken ct = default);
+    Task<BudgetCategory> AddCategoryAsync(CategoryUpsert data, CancellationToken ct = default);
+    Task UpdateCategoryAsync(Guid id, CategoryUpsert data, CancellationToken ct = default);
+    Task SetCategoryActiveAsync(Guid id, bool isActive, CancellationToken ct = default);
+    Task ReorderCategoryAsync(Guid id, bool moveUp, CancellationToken ct = default);
+    Task<BudgetSubcategory> AddSubcategoryAsync(Guid categoryId, string name, CancellationToken ct = default);
+    Task UpdateSubcategoryAsync(Guid id, string name, CancellationToken ct = default);
+    Task SetSubcategoryActiveAsync(Guid id, bool isActive, CancellationToken ct = default);
+    Task<List<PaymentMethod>> GetPaymentMethodsAsync(bool includeInactive = false, CancellationToken ct = default);
+    Task<List<CreditCardAccount>> GetCreditCardsAsync(CancellationToken ct = default);
+    Task<PaymentMethod> SavePaymentMethodAsync(PaymentMethodUpsert data, CancellationToken ct = default);
+    Task SetPaymentMethodActiveAsync(Guid id, bool isActive, CancellationToken ct = default);
+    Task<List<ExportHistory>> GetExportHistoryAsync(int take = 20, CancellationToken ct = default);
 }
+
+public record CategoryUpsert(
+    string Name,
+    BudgetGroup DefaultGroup,
+    string ColorHex,
+    string IconKey,
+    bool AllowRollover,
+    AllocationMode AllocationMode = AllocationMode.Percentage);
+
+public record PaymentMethodUpsert(
+    Guid? Id,
+    string Name,
+    PaymentMethodType Type,
+    Guid? CreditCardAccountId,
+    bool IsActive = true);
 
 public interface IExcelExportService
 {
     Task<string> ExportTransactionsAsync(IEnumerable<MoneyTransaction> items, string folder, CancellationToken ct = default);
     Task<string> ExportBudgetAsync(Guid periodId, string folder, CancellationToken ct = default);
+    Task<string> ExportGoalsAsync(IEnumerable<SavingsGoal> goals, string folder, CancellationToken ct = default);
 }
 
 public interface IPdfExportService
 {
     Task<string> ExportReportAsync(ReportData data, string folder, CancellationToken ct = default);
+    Task<string> ExportBudgetAsync(Guid periodId, string folder, CancellationToken ct = default);
+    Task<string> ExportGoalsAsync(IEnumerable<SavingsGoal> goals, string folder, CancellationToken ct = default);
 }
 
 public interface IFilterPresetService
@@ -141,9 +198,26 @@ public record CategoryComparisonItem(string Category, decimal Planned, decimal A
 public record CategoryDistributionItem(string Category, decimal Amount, string Color);
 public record TrendPoint(string Label, decimal Income, decimal Expense, decimal Savings);
 public record CriticalCategoryItem(string Category, decimal UsedPercent, BudgetLineStatus Status);
+public record ReportSummary(
+    decimal TotalIncome,
+    decimal TotalExpenses,
+    decimal PeriodSavings,
+    decimal FreeBalance,
+    decimal ExecutionPercent);
+
+public record ExceededCategoryItem(
+    string Category,
+    decimal Planned,
+    decimal Actual,
+    decimal UsedPercent,
+    string ColorHex);
+
 public record ReportData(
+    Guid PeriodId,
     string PeriodLabel,
+    ReportSummary Summary,
     List<CategoryDistributionItem> ByCategory,
     List<TrendPoint> Trend,
     decimal AccumulatedSavings,
-    List<(string Description, decimal Amount)> TopExpenses);
+    List<(string Description, decimal Amount)> TopExpenses,
+    List<ExceededCategoryItem> ExceededCategories);

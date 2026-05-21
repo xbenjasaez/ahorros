@@ -1,4 +1,5 @@
 using Ahorro.Data;
+using Ahorro.Models.Constants;
 using Ahorro.Models.Entities;
 using Ahorro.Models.Enums;
 using Ahorro.Models.Abstractions;
@@ -16,6 +17,7 @@ public static class DataSeeder
         if (await db.UserProfiles.AnyAsync(ct))
         {
             await RestoreUserContextAsync(db, userContext, ct);
+            await EnsureAppSettingsForUsersAsync(db, ct);
             return;
         }
 
@@ -85,12 +87,56 @@ public static class DataSeeder
         SeedScheduledPayments(db, user.Id, categories, methods);
         SeedDebt(db, user.Id);
         db.AlertRules.Add(new AlertRule { UserProfileId = user.Id, AttentionThreshold = 80, LimitThreshold = 100 });
+        SeedAppSettings(db, user.Id);
 
         await db.SaveChangesAsync(ct);
         SeedTransactions(db, periods, categories, methods, ct);
         await db.SaveChangesAsync(ct);
 
         userContext.ActivePeriodId = activePeriod.Id;
+    }
+
+    private static async Task EnsureAppSettingsForUsersAsync(AppDbContext db, CancellationToken ct)
+    {
+        var userIds = await db.UserProfiles.Select(u => u.Id).ToListAsync(ct);
+        foreach (var userId in userIds)
+        {
+            if (await db.AppSettings.AnyAsync(s => s.UserProfileId == userId, ct))
+                continue;
+            SeedAppSettings(db, userId);
+        }
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static void SeedAppSettings(AppDbContext db, Guid userId)
+    {
+        var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var defaults = new Dictionary<string, string>
+        {
+            [AppSettingKeys.CurrencyCode] = "CLP",
+            [AppSettingKeys.ThemeVariant] = "dark-premium",
+            [AppSettingKeys.AccentHex] = "#27D3FF",
+            [AppSettingKeys.GoalDefaultMonthlyPace] = "50000",
+            [AppSettingKeys.GoalShowProjections] = "True",
+            [AppSettingKeys.GoalAutoCelebrate] = "True",
+            [AppSettingKeys.GoalSuggestContributions] = "True",
+            [AppSettingKeys.ExportDefaultFolder] = Path.Combine(docs, "Ahorro", "Exportaciones"),
+            [AppSettingKeys.ExportIncludeNotes] = "True",
+            [AppSettingKeys.ExportPdfCharts] = "True",
+            [AppSettingKeys.ExportExcelAutoOpen] = "False",
+            [AppSettingKeys.ExportFileNamePrefix] = "Ahorro",
+            [AppSettingKeys.MultiUserEnabled] = "False"
+        };
+
+        foreach (var (key, value) in defaults)
+        {
+            db.AppSettings.Add(new AppSetting
+            {
+                UserProfileId = userId,
+                Key = key,
+                Value = value
+            });
+        }
     }
 
     private static async Task RestoreUserContextAsync(AppDbContext db, ICurrentUserContext userContext, CancellationToken ct)
@@ -242,12 +288,17 @@ public static class DataSeeder
         var efectivo = methods.First(m => m.Name == "Efectivo").Id;
         var transferencia = methods.First(m => m.Name == "Transferencia").Id;
         db.ScheduledPayments.AddRange(
-            new ScheduledPayment { UserProfileId = userId, Name = "Plan celular", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 18_990, DueDate = DateTime.Today.AddDays(4), ReminderDaysBefore = 3, PaymentMethodId = visa, Status = ScheduledPaymentStatus.Upcoming },
-            new ScheduledPayment { UserProfileId = userId, Name = "Internet hogar", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 24_990, DueDate = DateTime.Today.AddDays(8), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
-            new ScheduledPayment { UserProfileId = userId, Name = "Pago tarjeta Visa", CategoryId = cat("Deudas"), EstimatedAmount = 420_000, DueDate = DateTime.Today.AddDays(5), PaymentMethodId = transferencia, Status = ScheduledPaymentStatus.Upcoming },
-            new ScheduledPayment { UserProfileId = userId, Name = "Luz", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 45_000, DueDate = DateTime.Today.AddDays(-2), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Overdue },
-            new ScheduledPayment { UserProfileId = userId, Name = "Netflix", CategoryId = cat("Ocio"), EstimatedAmount = 12_990, DueDate = DateTime.Today.AddDays(12), PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
-            new ScheduledPayment { UserProfileId = userId, Name = "Agua", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 22_000, DueDate = DateTime.Today.AddDays(15), PaymentMethodId = efectivo, Status = ScheduledPaymentStatus.Pending });
+            new ScheduledPayment { UserProfileId = userId, Name = "Plan celular", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 18_990, DueDate = DateTime.Today.AddDays(4), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 3, PaymentMethodId = visa, Status = ScheduledPaymentStatus.Upcoming },
+            new ScheduledPayment { UserProfileId = userId, Name = "Internet hogar", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 24_990, DueDate = DateTime.Today.AddDays(8), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 5, PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Pago tarjeta Visa", CategoryId = cat("Deudas"), EstimatedAmount = 420_000, DueDate = DateTime.Today.AddDays(5), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 7, PaymentMethodId = transferencia, Status = ScheduledPaymentStatus.Upcoming },
+            new ScheduledPayment { UserProfileId = userId, Name = "Luz", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 45_000, DueDate = DateTime.Today.AddDays(-2), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 3, PaymentMethodId = debito, LastPaidDate = DateTime.Today.AddMonths(-1), Status = ScheduledPaymentStatus.Overdue },
+            new ScheduledPayment { UserProfileId = userId, Name = "Netflix", CategoryId = cat("Ocio"), EstimatedAmount = 12_990, DueDate = DateTime.Today.AddDays(12), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 2, PaymentMethodId = debito, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Agua", CategoryId = cat("Cuentas del hogar"), EstimatedAmount = 22_000, DueDate = DateTime.Today.AddDays(15), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 4, PaymentMethodId = efectivo, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Seguro auto", CategoryId = cat("Auto"), EstimatedAmount = 38_500, DueDate = DateTime.Today.AddDays(20), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 10, PaymentMethodId = transferencia, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Colegiatura", CategoryId = cat("Otros"), EstimatedAmount = 185_000, DueDate = DateTime.Today.AddDays(1), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 5, PaymentMethodId = debito, Status = ScheduledPaymentStatus.Upcoming },
+            new ScheduledPayment { UserProfileId = userId, Name = "Gimnasio", CategoryId = cat("Salud"), EstimatedAmount = 29_990, DueDate = DateTime.Today.AddDays(14), Frequency = IncomeFrequency.Biweekly, ReminderDaysBefore = 3, PaymentMethodId = visa, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Patente vehículo", CategoryId = cat("Auto"), EstimatedAmount = 120_000, DueDate = DateTime.Today.AddDays(45), Frequency = IncomeFrequency.OneTime, ReminderDaysBefore = 14, PaymentMethodId = transferencia, Status = ScheduledPaymentStatus.Pending },
+            new ScheduledPayment { UserProfileId = userId, Name = "Spotify", CategoryId = cat("Ocio"), EstimatedAmount = 5_990, DueDate = DateTime.Today.AddDays(-30), Frequency = IncomeFrequency.Monthly, ReminderDaysBefore = 2, PaymentMethodId = debito, LastPaidDate = DateTime.Today.AddDays(-30), Status = ScheduledPaymentStatus.Paid });
     }
 
     private static void SeedDebt(AppDbContext db, Guid userId) =>

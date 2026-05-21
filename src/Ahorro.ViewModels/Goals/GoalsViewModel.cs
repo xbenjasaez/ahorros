@@ -13,6 +13,8 @@ public partial class GoalsViewModel : ViewModelBase, ILoadable
     private const decimal DefaultMonthlyPace = 50_000m;
     private readonly ISavingsGoalService _goals;
     private readonly IBudgetService _budget;
+    private readonly IExcelExportService _excel;
+    private readonly IPdfExportService _pdf;
     private Guid? _editingGoalId;
 
     [ObservableProperty] private string _totalSaved = "$0";
@@ -43,11 +45,13 @@ public partial class GoalsViewModel : ViewModelBase, ILoadable
 
     partial void OnStatusMessageChanged(string value) => HasStatusMessage = !string.IsNullOrWhiteSpace(value);
 
-    public GoalsViewModel(ISavingsGoalService goals, IBudgetService budget)
+    public GoalsViewModel(ISavingsGoalService goals, IBudgetService budget, IExcelExportService excel, IPdfExportService pdf)
     {
         Title = "Metas de ahorro";
         _goals = goals;
         _budget = budget;
+        _excel = excel;
+        _pdf = pdf;
         SeedColorPresets();
         foreach (var icon in GoalIconHelper.AllOptions)
             IconOptions.Add(icon);
@@ -300,5 +304,21 @@ public partial class GoalsViewModel : ViewModelBase, ILoadable
         }
         StatusMessage = $"“{goal.Name}” archivada.";
         await LoadAsync();
+    }
+
+    [RelayCommand]
+    private async Task ExportExcel()
+    {
+        var list = await _goals.GetActiveGoalsAsync();
+        var path = await _excel.ExportGoalsAsync(list, ExportPaths.DefaultFolder);
+        StatusMessage = $"Metas exportadas: {path}";
+    }
+
+    [RelayCommand]
+    private async Task ExportPdf()
+    {
+        var list = await _goals.GetActiveGoalsAsync();
+        var path = await _pdf.ExportGoalsAsync(list, ExportPaths.DefaultFolder);
+        StatusMessage = $"Metas PDF: {path}";
     }
 }

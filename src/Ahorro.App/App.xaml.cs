@@ -65,5 +65,10 @@ public partial class App : Application
         var user = scope.ServiceProvider.GetRequiredService<ICurrentUserContext>();
         await DataSeeder.SeedAsync(db, user);
         await scope.ServiceProvider.GetRequiredService<IBudgetPeriodService>().EnsureActivePeriodAsync();
+
+        var settings = scope.ServiceProvider.GetRequiredService<ISettingsService>();
+        var theme = scope.ServiceProvider.GetRequiredService<IThemeService>();
+        var prefs = await settings.GetPreferencesAsync();
+        theme.Apply(prefs.ThemeVariant, prefs.AccentHex);
     }
 }

@@ -81,7 +81,10 @@ public class ScheduledPaymentConfiguration : IEntityTypeConfiguration<ScheduledP
     {
         b.HasKey(x => x.Id);
         b.Property(x => x.EstimatedAmount).HasPrecision(18, 2);
+        b.Property(x => x.Name).HasMaxLength(200);
         b.HasIndex(x => x.DueDate);
+        b.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.PaymentMethod).WithMany().HasForeignKey(x => x.PaymentMethodId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -103,5 +106,57 @@ public class CreditCardAccountConfiguration : IEntityTypeConfiguration<CreditCar
         b.Property(x => x.CreditLimit).HasPrecision(18, 2);
         b.Property(x => x.CurrentBalance).HasPrecision(18, 2);
         b.Property(x => x.AvailableCredit).HasPrecision(18, 2);
+    }
+}
+
+public class AppSettingConfiguration : IEntityTypeConfiguration<AppSetting>
+{
+    public void Configure(EntityTypeBuilder<AppSetting> b)
+    {
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Key).HasMaxLength(120);
+        b.Property(x => x.Value).HasMaxLength(2000);
+        b.HasIndex(x => new { x.UserProfileId, x.Key }).IsUnique();
+        b.HasOne(x => x.UserProfile).WithMany(u => u.Settings).HasForeignKey(x => x.UserProfileId);
+    }
+}
+
+public class AlertRuleConfiguration : IEntityTypeConfiguration<AlertRule>
+{
+    public void Configure(EntityTypeBuilder<AlertRule> b)
+    {
+        b.HasKey(x => x.Id);
+        b.HasIndex(x => new { x.UserProfileId, x.CategoryId });
+        b.HasOne(x => x.UserProfile).WithMany(u => u.AlertRules).HasForeignKey(x => x.UserProfileId);
+    }
+}
+
+public class PaymentMethodConfiguration : IEntityTypeConfiguration<PaymentMethod>
+{
+    public void Configure(EntityTypeBuilder<PaymentMethod> b)
+    {
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(120);
+        b.HasOne(x => x.UserProfile).WithMany(u => u.PaymentMethods).HasForeignKey(x => x.UserProfileId);
+    }
+}
+
+public class BudgetSubcategoryConfiguration : IEntityTypeConfiguration<BudgetSubcategory>
+{
+    public void Configure(EntityTypeBuilder<BudgetSubcategory> b)
+    {
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Name).HasMaxLength(120);
+    }
+}
+
+public class ExportHistoryConfiguration : IEntityTypeConfiguration<ExportHistory>
+{
+    public void Configure(EntityTypeBuilder<ExportHistory> b)
+    {
+        b.HasKey(x => x.Id);
+        b.Property(x => x.FilePath).HasMaxLength(500);
+        b.HasIndex(x => x.CreatedAt);
+        b.HasOne(x => x.UserProfile).WithMany(u => u.ExportHistories).HasForeignKey(x => x.UserProfileId);
     }
 }
