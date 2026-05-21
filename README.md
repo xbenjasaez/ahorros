@@ -1,22 +1,38 @@
-# Ahorro
+# Ahorro — Presupuesto personal (WPF .NET 8)
 
-Aplicación de escritorio para gestión de presupuesto, transacciones, metas de ahorro y reportes financieros.
+Aplicación de escritorio para gestión de presupuesto, ahorro, movimientos, metas y pagos programados.
 
 ## Requisitos
 
-- [.NET SDK](https://dotnet.microsoft.com/download) compatible con el proyecto
-- Windows (WPF)
+- .NET 8 SDK
+- Windows 10/11
 
-## Ejecución
+## Compilar y ejecutar
 
-```bash
-dotnet build Ahorro.sln
-dotnet run --project src/Ahorro.App/Ahorro.App.csproj
+```powershell
+cd c:\Proyectos\Escritorio\Ahorro
+dotnet restore Ahorro.sln
+dotnet build Ahorro.sln -c Release
+dotnet run --project src\Ahorro.App\Ahorro.App.csproj
 ```
 
-## Estructura
+## Arquitectura
 
-- `src/Ahorro.App` — aplicación principal
-- `src/Ahorro.Views` / `src/Ahorro.ViewModels` — interfaz MVVM
-- `src/Ahorro.Services` / `src/Ahorro.Repositories` / `src/Ahorro.Data` — lógica y persistencia
-- `src/Ahorro.Models` — entidades y DTOs
+| Proyecto | Rol |
+|----------|-----|
+| Ahorro.App | Host WPF, DI, ventana principal |
+| Ahorro.Views / ViewModels | MVVM estricto |
+| Ahorro.Services | Lógica de negocio |
+| Ahorro.Repositories / Data | EF Core + SQLite |
+| Ahorro.Models | Entidades |
+| Ahorro.Themes | Tema oscuro premium |
+| Ahorro.Exports | Excel (ClosedXML) + PDF (QuestPDF) |
+| Ahorro.Configuration | Seed de datos demo |
+
+Base de datos: `%LocalAppData%\Ahorro\ahorro.db`
+
+## Pantallas
+
+Dashboard, Presupuesto, Movimientos, Metas, Pagos, Reportes, Configuración.
+
+Datos de demostración se cargan en el primer arranque (perfil local, 3 periodos, transacciones, metas, pagos).

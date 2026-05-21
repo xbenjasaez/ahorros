@@ -1,4 +1,4 @@
-using Ahorro.Services.Abstractions;
+using Ahorro.Models.Abstractions;
 
 namespace Ahorro.Services.Infrastructure;
 

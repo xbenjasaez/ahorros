@@ -9,6 +9,5 @@
     <ProjectReference Include="..\Ahorro.Data\Ahorro.Data.csproj" />
     <ProjectReference Include="..\Ahorro.Models\Ahorro.Models.csproj" />
     <ProjectReference Include="..\Ahorro.Helpers\Ahorro.Helpers.csproj" />
-    <ProjectReference Include="..\Ahorro.Services\Ahorro.Services.csproj" />
   </ItemGroup>
 </Project>

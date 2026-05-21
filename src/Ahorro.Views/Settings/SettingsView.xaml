@@ -1,0 +1,59 @@
+<UserControl x:Class="Ahorro.Views.Settings.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.BackgroundApp}">
+    <ScrollViewer Padding="24">
+        <StackPanel MaxWidth="720">
+            <TextBlock Style="{StaticResource PageHeader}" Text="Configuración" Margin="0,0,0,16"/>
+            <TabControl Background="Transparent" BorderThickness="0">
+                <TabItem Header="Perfil">
+                    <Border Style="{StaticResource KpiCardBorder}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Nombre" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <TextBox Text="{Binding DisplayName}" Margin="0,4,0,12"/>
+                            <TextBlock Text="Email" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <TextBox Text="{Binding Email}" Margin="0,4,0,12"/>
+                            <Button Style="{StaticResource AccentButton}" Content="Guardar" Command="{Binding SaveCommand}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+                <TabItem Header="Periodo">
+                    <Border Style="{StaticResource KpiCardBorder}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Día de corte (1-28)" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <TextBox Text="{Binding CutoffDay}" Margin="0,4,0,12"/>
+                            <TextBlock Text="Frecuencia" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <ComboBox SelectedItem="{Binding Frequency}" Margin="0,4,0,0">
+                                <ComboBoxItem Content="Monthly"/>
+                                <ComboBoxItem Content="Biweekly"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+                <TabItem Header="Alertas">
+                    <Border Style="{StaticResource KpiCardBorder}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Umbral atención %" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <TextBox Text="{Binding AttentionThreshold}" Margin="0,4,0,12"/>
+                            <TextBlock Text="Umbral límite %" Foreground="{StaticResource Brush.TextSecondary}"/>
+                            <TextBox Text="{Binding LimitThreshold}"/>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+                <TabItem Header="Apariencia">
+                    <Border Style="{StaticResource KpiCardBorder}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ThemeNote}" Foreground="{StaticResource Brush.TextPrimary}"/>
+                            <TextBlock Text="{Binding Currency}" Foreground="{StaticResource Brush.AccentCyan}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+                <TabItem Header="Multiusuario">
+                    <Border Style="{StaticResource KpiCardBorder}" Margin="0,12,0,0" Opacity="0.7">
+                        <TextBlock Text="{Binding MultiUserNote}" Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"/>
+                    </Border>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -6,4 +6,6 @@
         <ResourceDictionary Source="Effects.xaml"/>
         <ResourceDictionary Source="Controls.xaml"/>
     </ResourceDictionary.MergedDictionaries>
+    <conv:StatusToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="StatusToBrush"/>
+    <conv:BoolToVisibilityConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters" x:Key="BoolToVis"/>
 </ResourceDictionary>

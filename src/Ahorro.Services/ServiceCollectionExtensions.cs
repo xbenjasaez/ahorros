@@ -1,5 +1,6 @@
 using Ahorro.Repositories;
 using Ahorro.Repositories.Abstractions;
+using Ahorro.Models.Abstractions;
 using Ahorro.Services.Abstractions;
 using Ahorro.Services.Budget;
 using Ahorro.Services.Dashboard;

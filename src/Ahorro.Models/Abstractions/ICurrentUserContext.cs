@@ -1,4 +1,4 @@
-namespace Ahorro.Services.Abstractions;
+namespace Ahorro.Models.Abstractions;
 
 public interface ICurrentUserContext
 {

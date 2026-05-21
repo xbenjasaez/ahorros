@@ -1,0 +1,52 @@
+<UserControl x:Class="Ahorro.Views.Payments.PaymentsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.BackgroundApp}">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="220"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Grid Margin="0,0,0,16">
+                <TextBlock Style="{StaticResource PageHeader}" Text="Pagos y vencimientos"/>
+                <ComboBox HorizontalAlignment="Right" Width="160" ItemsSource="{Binding StatusFilters}"
+                          SelectedItem="{Binding StatusFilter}"/>
+            </Grid>
+            <DataGrid ItemsSource="{Binding FilteredItems}" Style="{StaticResource PremiumDataGrid}" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="120"/>
+                    <DataGridTextColumn Header="Monto" Binding="{Binding Amount}" Width="110"/>
+                    <DataGridTextColumn Header="Vence" Binding="{Binding DueDate}" Width="110"/>
+                    <DataGridTextColumn Header="Estado" Binding="{Binding StatusLabel}" Width="90"/>
+                    <DataGridTemplateColumn Header="" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource AccentButton}" Content="Registrar pago"
+                                        Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+        <Border Grid.Column="1" Style="{StaticResource KpiCardBorder}" Margin="16,0,0,0">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionTitle}" Text="Calendario"/>
+                <TextBlock Text="Próximos vencimientos marcados por día de pago." Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"/>
+                <ItemsControl ItemsSource="{Binding PaymentItems}" Margin="0,16,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,4">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource Brush.AccentCyan}" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding DueDate}" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

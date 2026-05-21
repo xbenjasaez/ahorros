@@ -12,7 +12,8 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
 {
     private readonly IScheduledPaymentService _payments;
 
-    [ObservableProperty] private string _statusFilter = "Todos";
+    [ObservableProperty] private string? _statusFilter;
+    public ObservableCollection<string> StatusFilters { get; } = ["Todos", "Pending", "Upcoming", "Overdue", "Paid"];
     public ObservableCollection<PaymentListItem> PaymentItems { get; } = [];
     public ObservableCollection<PaymentListItem> FilteredItems { get; } = [];
 
@@ -44,13 +45,13 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
         IsBusy = false;
     }
 
-    partial void OnStatusFilterChanged(string value) => ApplyStatusFilter();
+    partial void OnStatusFilterChanged(string? value) => ApplyStatusFilter();
 
     private void ApplyStatusFilter()
     {
         FilteredItems.Clear();
         var query = PaymentItems.AsEnumerable();
-        if (StatusFilter != "Todos" && Enum.TryParse<ScheduledPaymentStatus>(StatusFilter, out var st))
+        if (!string.IsNullOrEmpty(StatusFilter) && StatusFilter != "Todos" && Enum.TryParse<ScheduledPaymentStatus>(StatusFilter, out var st))
             query = query.Where(p => p.Status == st);
         foreach (var p in query)
             FilteredItems.Add(p);
