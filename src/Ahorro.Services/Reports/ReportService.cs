@@ -25,9 +25,11 @@ public class ReportService : IReportService
             .Where(a => a.BudgetPeriodId == periodId)
             .ToListAsync(ct);
 
-        var expenses = await _db.Transactions.AsNoTracking()
+        var expenseAmounts = await _db.Transactions.AsNoTracking()
             .Where(t => t.BudgetPeriodId == periodId && t.Type == TransactionType.Expense)
-            .SumAsync(t => t.Amount, ct);
+            .Select(t => t.Amount)
+            .ToListAsync(ct);
+        var expenses = expenseAmounts.Sum();
 
         var savingsAlloc = allocations
             .Where(a => a.Category?.DefaultGroup == BudgetGroup.Savings)
@@ -51,16 +53,20 @@ public class ReportService : IReportService
             .Select(p => new TrendPoint($"{p.StartDate:MMM yy}", p.TotalNetIncome, p.ActualSpent, p.TotalNetIncome - p.ActualSpent))
             .ToList();
 
-        var top = await _db.Transactions.AsNoTracking()
+        var top = (await _db.Transactions.AsNoTracking()
             .Where(t => t.BudgetPeriodId == periodId && t.Type == TransactionType.Expense)
+            .Select(t => new { t.Description, t.Amount })
+            .ToListAsync(ct))
             .OrderByDescending(t => t.Amount)
             .Take(10)
             .Select(t => new ValueTuple<string, decimal>(t.Description, t.Amount))
-            .ToListAsync(ct);
+            .ToList();
 
-        var accumulated = await _db.SavingsGoals.AsNoTracking()
+        var accumulatedAmounts = await _db.SavingsGoals.AsNoTracking()
             .Where(g => g.UserProfileId == period.UserProfileId && g.Status == GoalStatus.Active)
-            .SumAsync(g => g.AccumulatedAmount, ct);
+            .Select(g => g.AccumulatedAmount)
+            .ToListAsync(ct);
+        var accumulated = accumulatedAmounts.Sum();
 
         var exceeded = allocations
             .Where(a => a.Status == BudgetLineStatus.Exceeded || a.UsedPercent > 100)

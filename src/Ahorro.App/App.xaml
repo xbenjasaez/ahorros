@@ -17,6 +17,7 @@
             <conv:UsedPercentToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="UsedPercentToBrush"/>
             <conv:BudgetStatusToRowBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="BudgetStatusToRow"/>
             <conv:TransactionStatusToBrushConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="TxStatusToBrush"/>
+            <conv:NavigationPageEqualsConverter xmlns:conv="clr-namespace:Ahorro.Themes.Converters;assembly=Ahorro.Themes" x:Key="NavPageEquals"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

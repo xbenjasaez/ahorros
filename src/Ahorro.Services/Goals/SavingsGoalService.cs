@@ -20,13 +20,18 @@ public class SavingsGoalService : ISavingsGoalService
         _user = user;
     }
 
-    public Task<List<SavingsGoal>> GetActiveGoalsAsync(CancellationToken ct = default) =>
-        _db.SavingsGoals.AsNoTracking()
+    public async Task<List<SavingsGoal>> GetActiveGoalsAsync(CancellationToken ct = default)
+    {
+        var goals = await _db.SavingsGoals.AsNoTracking()
             .Include(g => g.Category)
             .Where(g => g.UserProfileId == _user.UserId && g.Status == GoalStatus.Active)
+            .ToListAsync(ct);
+
+        return goals
             .OrderByDescending(g => g.TargetAmount > 0 ? g.AccumulatedAmount / g.TargetAmount : 0)
             .ThenBy(g => g.TargetDate)
-            .ToListAsync(ct);
+            .ToList();
+    }
 
     public async Task<GoalsDashboardSummary> GetSummaryAsync(CancellationToken ct = default)
     {

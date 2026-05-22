@@ -22,6 +22,11 @@ public partial class App : Application
         try
         {
             HostApp = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+                .UseDefaultServiceProvider(o =>
+                {
+                    o.ValidateScopes = true;
+                    o.ValidateOnBuild = true;
+                })
                 .ConfigureServices(ConfigureServices)
                 .Build();
 
@@ -44,6 +49,14 @@ public partial class App : Application
                 MessageBoxImage.Error);
             Shutdown(1);
         }
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        if (HostApp.Services.GetService<MainShellViewModel>() is IDisposable disposable)
+            disposable.Dispose();
+        HostApp?.Dispose();
+        base.OnExit(e);
     }
 
     private static void ConfigureServices(IServiceCollection services)

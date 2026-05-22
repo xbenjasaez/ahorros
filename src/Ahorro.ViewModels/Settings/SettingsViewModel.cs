@@ -85,6 +85,37 @@ public partial class SettingsViewModel : ViewModelBase, ILoadable
 
     partial void OnStatusMessageChanged(string value) => HasStatusMessage = !string.IsNullOrWhiteSpace(value);
 
+    public string ActiveProfileDisplay => string.IsNullOrWhiteSpace(DisplayName) ? "Perfil local" : DisplayName.Trim();
+    public string ActiveProfileInitial => string.IsNullOrWhiteSpace(DisplayName) ? "P" : char.ToUpperInvariant(DisplayName.Trim()[0]).ToString();
+    public string ActiveCurrencyDisplay => SelectedCurrency?.Label ?? CurrencyCode;
+    public string ActiveThemeDisplay => SelectedTheme?.Label ?? SettingsLabels.LabelThemeVariant("dark-premium");
+    public string ActiveStorageDisplay => "Modo offline · almacenamiento local";
+    public string ActiveCutoffDisplay => $"Día de corte {CutoffDay} · {SelectedFrequency?.Label ?? "Mensual"}";
+    public string ActiveAlertsSummary => AlertsEnabled
+        ? $"Activas · atención {AttentionThreshold}% · límite {LimitThreshold}%"
+        : "Alertas desactivadas";
+    public string ActiveAccentDisplay => SelectedAccent?.Hex ?? "#27D3FF";
+    public string ActiveMultiUserSummary => MultiUserEnabled
+        ? $"{UserProfiles.Count} perfiles · cambio habilitado"
+        : "Un solo perfil en este equipo";
+
+    partial void OnDisplayNameChanged(string value)
+    {
+        OnPropertyChanged(nameof(ActiveProfileDisplay));
+        OnPropertyChanged(nameof(ActiveProfileInitial));
+    }
+
+    partial void OnSelectedCurrencyChanged(CurrencyOption? value) => OnPropertyChanged(nameof(ActiveCurrencyDisplay));
+    partial void OnCurrencyCodeChanged(string value) => OnPropertyChanged(nameof(ActiveCurrencyDisplay));
+    partial void OnSelectedThemeChanged(ThemeVariantOption? value) => OnPropertyChanged(nameof(ActiveThemeDisplay));
+    partial void OnCutoffDayChanged(int value) => OnPropertyChanged(nameof(ActiveCutoffDisplay));
+    partial void OnSelectedFrequencyChanged(EnumLookupItem<PeriodFrequency>? value) => OnPropertyChanged(nameof(ActiveCutoffDisplay));
+    partial void OnAttentionThresholdChanged(int value) => OnPropertyChanged(nameof(ActiveAlertsSummary));
+    partial void OnLimitThresholdChanged(int value) => OnPropertyChanged(nameof(ActiveAlertsSummary));
+    partial void OnAlertsEnabledChanged(bool value) => OnPropertyChanged(nameof(ActiveAlertsSummary));
+    partial void OnSelectedAccentChanged(AccentColorOption? value) => OnPropertyChanged(nameof(ActiveAccentDisplay));
+    partial void OnMultiUserEnabledChanged(bool value) => OnPropertyChanged(nameof(ActiveMultiUserSummary));
+
     partial void OnSelectedCategoryChanged(SettingsCategoryItem? value)
     {
         if (value == null)
@@ -155,6 +186,7 @@ public partial class SettingsViewModel : ViewModelBase, ILoadable
             await ReloadPaymentMethodsAsync();
             await ReloadUsersAsync();
             await ReloadExportHistoryAsync();
+            RefreshSummaryDisplays();
             SetStatus("Configuración cargada.");
         }
         finally
@@ -662,6 +694,7 @@ public partial class SettingsViewModel : ViewModelBase, ILoadable
         }
 
         SelectedUser = UserProfiles.FirstOrDefault(u => u.IsCurrent) ?? UserProfiles.FirstOrDefault();
+        OnPropertyChanged(nameof(ActiveMultiUserSummary));
         MultiUserDescription = profiles.Count <= 1
             ? "Base preparada para varios perfiles. Crea perfiles adicionales en futuras versiones o importación."
             : $"{profiles.Count} perfiles locales registrados. Selecciona uno para cambiar el contexto activo.";
@@ -689,6 +722,18 @@ public partial class SettingsViewModel : ViewModelBase, ILoadable
                 FilePath = e.FilePath
             });
         }
+    }
+
+    private void RefreshSummaryDisplays()
+    {
+        OnPropertyChanged(nameof(ActiveProfileDisplay));
+        OnPropertyChanged(nameof(ActiveProfileInitial));
+        OnPropertyChanged(nameof(ActiveCurrencyDisplay));
+        OnPropertyChanged(nameof(ActiveThemeDisplay));
+        OnPropertyChanged(nameof(ActiveCutoffDisplay));
+        OnPropertyChanged(nameof(ActiveAlertsSummary));
+        OnPropertyChanged(nameof(ActiveAccentDisplay));
+        OnPropertyChanged(nameof(ActiveMultiUserSummary));
     }
 
     private void SetStatus(string message, bool error = false)

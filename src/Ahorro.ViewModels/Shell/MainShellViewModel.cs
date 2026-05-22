@@ -6,43 +6,54 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ahorro.ViewModels.Shell;
 
-public partial class MainShellViewModel : ViewModelBase
+public partial class MainShellViewModel : ViewModelBase, IDisposable
 {
     private readonly INavigationService _navigation;
-    private readonly IServiceProvider _services;
-    private readonly Func<NavigationPage, ViewModelBase> _vmFactory;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private IServiceScope? _pageScope;
 
     [ObservableProperty] private ViewModelBase? _currentViewModel;
     [ObservableProperty] private string _appTitle = "AHORRO";
     [ObservableProperty] private NavigationPage _selectedPage = NavigationPage.Dashboard;
 
-    public MainShellViewModel(
-        INavigationService navigation,
-        IServiceProvider services,
-        Dashboard.DashboardViewModel dashboard)
+    public MainShellViewModel(INavigationService navigation, IServiceScopeFactory scopeFactory)
     {
         _navigation = navigation;
-        _services = services;
-        _vmFactory = page => (ViewModelBase)_services.GetRequiredService(GetVmType(page));
-        CurrentViewModel = dashboard;
-        _navigation.PageChanged += OnPageChanged;
+        _scopeFactory = scopeFactory;
+        _pageScope = _scopeFactory.CreateScope();
+        SelectedPage = NavigationPage.Dashboard;
+        _navigation.Navigate(NavigationPage.Dashboard);
+        CurrentViewModel = _pageScope.ServiceProvider.GetRequiredService<Dashboard.DashboardViewModel>();
     }
 
     [RelayCommand]
-    private void Navigate(string page)
+    private async Task NavigateAsync(string page)
     {
         if (!Enum.TryParse<NavigationPage>(page, out var navPage)) return;
-        SelectedPage = navPage;
-        _navigation.Navigate(navPage);
-        CurrentViewModel = _vmFactory(navPage);
-        if (CurrentViewModel is ILoadable loadable)
-            _ = loadable.LoadAsync();
+        await ShowPageAsync(navPage);
     }
 
-    private void OnPageChanged(NavigationPage page)
+    private async Task ShowPageAsync(NavigationPage page)
     {
+        if (SelectedPage == page && CurrentViewModel is not null)
+            return;
+
+        _pageScope?.Dispose();
+        _pageScope = _scopeFactory.CreateScope();
+
         SelectedPage = page;
-        CurrentViewModel = _vmFactory(page);
+        _navigation.Navigate(page);
+
+        CurrentViewModel = _pageScope.ServiceProvider.GetRequiredService(GetVmType(page)) as ViewModelBase;
+
+        if (CurrentViewModel is ILoadable loadable)
+            await loadable.LoadAsync();
+    }
+
+    public void Dispose()
+    {
+        _pageScope?.Dispose();
+        _pageScope = null;
     }
 
     private static Type GetVmType(NavigationPage page) => page switch

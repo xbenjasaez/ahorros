@@ -9,40 +9,14 @@
                 <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
-            <Style x:Key="SettingsTabItem" TargetType="TabItem">
-                <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
-                <Setter Property="Padding" Value="14,10"/>
-                <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="TabItem">
-                            <Border x:Name="Bd" Padding="{TemplateBinding Padding}" BorderThickness="0,0,0,2" BorderBrush="Transparent" Background="Transparent">
-                                <ContentPresenter ContentSource="Header"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource Brush.AccentCyan}"/>
-                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.AccentCyan}"/>
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-            <Style x:Key="FieldLabel" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
-                <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}"/>
-                <Setter Property="Margin" Value="0,0,0,4"/>
-            </Style>
+
             <DataTemplate x:Key="ColorSwatchTemplate">
                 <StackPanel Orientation="Horizontal" Margin="0,4">
                     <Ellipse Width="18" Height="18" Fill="{Binding Swatch}" Stroke="{StaticResource Brush.BorderSubtle}" StrokeThickness="1"/>
                     <TextBlock Text="{Binding Hex}" Foreground="{StaticResource Brush.TextSecondary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
             </DataTemplate>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -53,64 +27,169 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Style="{StaticResource PageHeader}" Text="Configuración"/>
-            <TextBlock Foreground="{StaticResource Brush.TextSecondary}" Text="Perfil, periodos, categorías, alertas, apariencia y exportación — persistencia local."
-                       TextWrapping="Wrap" Margin="0,6,0,0"/>
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Style="{StaticResource PageHeader}" Text="Configuración"/>
+                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap" Margin="0,6,0,0" MaxWidth="720"
+                           Text="Perfil, periodos, alertas, apariencia y multiusuario. Datos y preferencias persistidos en este equipo."/>
+            </StackPanel>
+            <Border Grid.Column="1" Background="#141C26" BorderBrush="{StaticResource Brush.BorderSubtle}" BorderThickness="1"
+                    CornerRadius="8" Padding="14,10" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource Brush.PositiveGreen}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ActiveStorageDisplay}" Foreground="{StaticResource Brush.TextSecondary}"
+                               FontSize="{StaticResource FontSize.Caption}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <Border Grid.Row="1" Style="{StaticResource KpiCardBorder}" Margin="0,0,0,16" Padding="12,10"
                 Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}">
             <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.AccentCyan}" TextWrapping="Wrap"/>
         </Border>
 
-        <TabControl Grid.Row="2" Background="Transparent" BorderThickness="0"
+        <TabControl Grid.Row="2" Style="{StaticResource PremiumTabControl}"
                     SelectedIndex="{Binding SelectedTabIndex}">
-            <TabItem Header="Perfil" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Nombre visible"/>
-                            <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Correo (opcional)"/>
-                            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,18"/>
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar perfil" Command="{Binding SaveProfileCommand}" HorizontalAlignment="Left"/>
-                        </StackPanel>
-                    </Border>
-                </ScrollViewer>
-            </TabItem>
-
-            <TabItem Header="Periodo" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
-                        <StackPanel>
-                            <TextBlock Text="Ciclo presupuestario" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Día de corte mensual (1–28)"/>
-                            <TextBox Text="{Binding CutoffDay, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Frecuencia del periodo"/>
-                            <ComboBox ItemsSource="{Binding FrequencyOptions}" SelectedItem="{Binding SelectedFrequency}"
-                                      DisplayMemberPath="Label" Width="280" HorizontalAlignment="Left" Margin="0,0,0,8"/>
-                            <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap" FontSize="{StaticResource FontSize.Caption}"
-                                       Text="Quincenal divide el mes en dos ventanas de seguimiento alineadas al día de corte." Margin="0,0,0,18"/>
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar periodo" Command="{Binding SavePeriodCommand}" HorizontalAlignment="Left"/>
-                        </StackPanel>
-                    </Border>
-                </ScrollViewer>
-            </TabItem>
-
-            <TabItem Header="Categorías" Style="{StaticResource SettingsTabItem}">
-                <Grid Margin="0,12,0,0">
+            <!-- Perfil -->
+            <TabItem Header="Perfil" Style="{StaticResource PremiumTabItem}">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Identidad del perfil" Margin="0"/>
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"
+                                           Text="Nombre y correo visibles en reportes y exportaciones locales."/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Nombre visible"/>
+                                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Correo (opcional)"/>
+                                <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar perfil"
+                                    Command="{Binding SaveProfileCommand}" HorizontalAlignment="Right" Margin="0,24,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
+                        <StackPanel>
+                            <TextBlock Text="ESTADO DEL PERFIL" Style="{StaticResource SettingsMetaLabel}"/>
+                            <Grid Margin="0,12,0,20">
+                                <Ellipse Width="56" Height="56" Fill="#1A3A4A" Stroke="{StaticResource Brush.AccentCyan}" StrokeThickness="1.5"/>
+                                <TextBlock Text="{Binding ActiveProfileInitial}" FontSize="22" FontWeight="Bold"
+                                           Foreground="{StaticResource Brush.AccentCyan}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="{Binding ActiveProfileDisplay}" FontSize="{StaticResource FontSize.Subtitle}"
+                                       FontWeight="SemiBold" Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,16"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="PERFIL LOCAL"/>
+                            <TextBlock Text="{Binding ActiveProfileDisplay}" Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="MONEDA"/>
+                            <TextBlock Text="{Binding ActiveCurrencyDisplay}" Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="TEMA"/>
+                            <TextBlock Text="{Binding ActiveThemeDisplay}" Foreground="{StaticResource Brush.AccentCyan}" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="ALMACENAMIENTO"/>
+                            <TextBlock Text="{Binding ActiveStorageDisplay}" Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="PERIODO"/>
+                            <TextBlock Text="{Binding ActiveCutoffDisplay}" Foreground="{StaticResource Brush.TextPrimary}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Periodo -->
+            <TabItem Header="Periodo" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Ciclo presupuestario" Margin="0"/>
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"
+                                           Text="Define el día de corte y la frecuencia con la que se segmentan los periodos de seguimiento."/>
+                            </StackPanel>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Día de corte mensual (1–28)"/>
+                                    <TextBox Text="{Binding CutoffDay, UpdateSourceTrigger=PropertyChanged}" MaxWidth="200" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Frecuencia del periodo"/>
+                                    <ComboBox ItemsSource="{Binding FrequencyOptions}" SelectedItem="{Binding SelectedFrequency}"
+                                              DisplayMemberPath="Label"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="{StaticResource FontSize.Caption}" TextWrapping="Wrap"
+                                           Text="Quincenal divide el mes en dos ventanas alineadas al día de corte. Los cambios aplican al siguiente periodo generado."/>
+                            </Grid>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar periodo"
+                                    Command="{Binding SavePeriodCommand}" HorizontalAlignment="Right" Margin="0,24,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
+                        <StackPanel>
+                            <TextBlock Text="CONFIGURACIÓN ACTIVA" Style="{StaticResource SettingsMetaLabel}"/>
+                            <TextBlock Text="{Binding ActiveCutoffDisplay}" FontSize="20" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.AccentCyan}" Margin="0,12,0,20"/>
+                            <Border Background="#141C26" BorderBrush="{StaticResource Brush.BorderSubtle}" BorderThickness="1"
+                                    CornerRadius="8" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="DÍA DE CORTE"/>
+                                    <TextBlock Text="{Binding CutoffDay}" FontSize="28" FontWeight="Bold"
+                                               Foreground="{StaticResource Brush.TextPrimary}" Margin="0,4,0,12"/>
+                                    <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="FRECUENCIA"/>
+                                    <TextBlock Text="{Binding SelectedFrequency.Label}" Foreground="{StaticResource Brush.TextPrimary}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Categorías -->
+            <TabItem Header="Categorías" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" MinWidth="260"/>
                         <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource KpiCardBorder}">
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}" Padding="16">
                         <DockPanel>
                             <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-                                <TextBlock Text="Categorías base" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold"/>
-                                <CheckBox Content="Mostrar inactivas" IsChecked="{Binding ShowInactiveCategories}" Margin="0,10,0,0"
+                                <TextBlock Text="Categorías base" Style="{StaticResource SectionTitle}" Margin="0,0,0,8"/>
+                                <CheckBox Content="Mostrar inactivas" IsChecked="{Binding ShowInactiveCategories}"
                                           Foreground="{StaticResource Brush.TextSecondary}"/>
                                 <Grid Margin="0,12,0,0">
                                     <Grid.ColumnDefinitions>
@@ -129,62 +208,65 @@
                         </DockPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Style="{StaticResource KpiCardBorder}">
-                        <StackPanel>
-                            <TextBlock Text="Detalle de categoría" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Nombre"/>
-                            <TextBox Text="{Binding SelectedCategory.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Grupo presupuestario"/>
-                            <ComboBox ItemsSource="{Binding GroupOptions}" SelectedItem="{Binding SelectedEditGroup}"
-                                      DisplayMemberPath="Label" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Color"/>
-                            <ListBox ItemsSource="{Binding CategoryColorPresets}" SelectedItem="{Binding SelectedCategoryColor}"
-                                     ItemTemplate="{StaticResource ColorSwatchTemplate}" MaxHeight="140" Margin="0,0,0,12"/>
-                            <CheckBox Content="Permitir arrastre de saldo (rollover)" IsChecked="{Binding EditCategoryRollover}"
-                                      Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,14"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                                <Button Style="{StaticResource AccentButton}" Content="Guardar categoría" Command="{Binding SaveSelectedCategoryCommand}" Margin="0,0,8,0"/>
-                                <Button Style="{StaticResource PremiumButton}" Content="↑" Command="{Binding MoveCategoryUpCommand}" Margin="0,0,4,0" Padding="10,8"/>
-                                <Button Style="{StaticResource PremiumButton}" Content="↓" Command="{Binding MoveCategoryDownCommand}" Margin="0,0,8,0" Padding="10,8"/>
-                                <Button Style="{StaticResource PremiumButton}" Content="Activar/Desactivar" Command="{Binding ToggleCategoryActiveCommand}"/>
-                            </StackPanel>
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Detalle de categoría" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Nombre"/>
+                                <TextBox Text="{Binding SelectedCategory.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Grupo presupuestario"/>
+                                <ComboBox ItemsSource="{Binding GroupOptions}" SelectedItem="{Binding SelectedEditGroup}"
+                                          DisplayMemberPath="Label" Margin="0,0,0,14"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Color"/>
+                                <ListBox ItemsSource="{Binding CategoryColorPresets}" SelectedItem="{Binding SelectedCategoryColor}"
+                                         ItemTemplate="{StaticResource ColorSwatchTemplate}" MaxHeight="140" Margin="0,0,0,14"/>
+                                <CheckBox Content="Permitir arrastre de saldo (rollover)" IsChecked="{Binding EditCategoryRollover}"
+                                          Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,16"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                    <Button Style="{StaticResource AccentButton}" Content="Guardar categoría" Command="{Binding SaveSelectedCategoryCommand}" Margin="0,0,8,0"/>
+                                    <Button Style="{StaticResource PremiumButton}" Content="↑" Command="{Binding MoveCategoryUpCommand}" Margin="0,0,4,0" Padding="10,8"/>
+                                    <Button Style="{StaticResource PremiumButton}" Content="↓" Command="{Binding MoveCategoryDownCommand}" Margin="0,0,8,0" Padding="10,8"/>
+                                    <Button Style="{StaticResource PremiumButton}" Content="Activar/Desactivar" Command="{Binding ToggleCategoryActiveCommand}"/>
+                                </StackPanel>
 
-                            <TextBlock Text="Subcategorías" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding NewSubcategoryName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"/>
-                                <Button Grid.Column="1" Style="{StaticResource PremiumButton}" Content="Agregar" Command="{Binding AddSubcategoryCommand}"/>
-                            </Grid>
-                            <DataGrid ItemsSource="{Binding Subcategories}" SelectedItem="{Binding SelectedSubcategory}"
-                                      Style="{StaticResource PremiumDataGrid}" MaxHeight="200" Margin="0,0,0,10">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
-                                    <DataGridTextColumn Header="Estado" Binding="{Binding StatusLabel}" Width="90" IsReadOnly="True"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource AccentButton}" Content="Guardar subcategoría" Command="{Binding SaveSelectedSubcategoryCommand}" Margin="0,0,8,0"/>
-                                <Button Style="{StaticResource PremiumButton}" Content="Activar/Desactivar sub" Command="{Binding ToggleSubcategoryActiveCommand}"/>
+                                <TextBlock Text="Subcategorías" Style="{StaticResource SectionTitle}"/>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding NewSubcategoryName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"/>
+                                    <Button Grid.Column="1" Style="{StaticResource PremiumButton}" Content="Agregar" Command="{Binding AddSubcategoryCommand}"/>
+                                </Grid>
+                                <DataGrid ItemsSource="{Binding Subcategories}" SelectedItem="{Binding SelectedSubcategory}"
+                                          Style="{StaticResource PremiumDataGrid}" MaxHeight="200" Margin="0,0,0,10">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Nombre" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                        <DataGridTextColumn Header="Estado" Binding="{Binding StatusLabel}" Width="90" IsReadOnly="True"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource AccentButton}" Content="Guardar subcategoría" Command="{Binding SaveSelectedSubcategoryCommand}" Margin="0,0,8,0"/>
+                                    <Button Style="{StaticResource PremiumButton}" Content="Activar/Desactivar sub" Command="{Binding ToggleSubcategoryActiveCommand}"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Pagos" Style="{StaticResource SettingsTabItem}">
-                <Grid Margin="0,12,0,0">
+            <!-- Pagos -->
+            <TabItem Header="Pagos" Style="{StaticResource PremiumTabItem}">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="340"/>
+                        <ColumnDefinition Width="360" MaxWidth="400"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource KpiCardBorder}">
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}" Padding="16">
                         <DockPanel>
                             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="Métodos de pago" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <TextBlock Text="Métodos de pago" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center"/>
                                 <Button Style="{StaticResource PremiumButton}" Content="Nuevo" Command="{Binding NewPaymentMethodCommand}" Margin="12,0,0,0"/>
                             </StackPanel>
                             <DataGrid ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}"
@@ -198,19 +280,19 @@
                             </DataGrid>
                         </DockPanel>
                     </Border>
-                    <Border Grid.Column="2" Style="{StaticResource KpiCardBorder}">
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}">
                         <StackPanel>
-                            <TextBlock Text="Editar método" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Nombre"/>
-                            <TextBox Text="{Binding PaymentMethodName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Tipo"/>
+                            <TextBlock Text="Editar método" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Nombre"/>
+                            <TextBox Text="{Binding PaymentMethodName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14"/>
+                            <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Tipo"/>
                             <ComboBox ItemsSource="{Binding PaymentTypeOptions}" SelectedItem="{Binding SelectedPaymentType}"
-                                      DisplayMemberPath="Label" Margin="0,0,0,12"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Tarjeta de crédito (si aplica)"/>
+                                      DisplayMemberPath="Label" Margin="0,0,0,14"/>
+                            <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Tarjeta de crédito (si aplica)"/>
                             <ComboBox ItemsSource="{Binding CreditCardOptions}" SelectedItem="{Binding SelectedCreditCard}"
-                                      DisplayMemberPath="Name" Margin="0,0,0,18"/>
+                                      DisplayMemberPath="Name" Margin="0,0,0,20"/>
                             <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource AccentButton}" Content="Guardar" Command="{Binding SavePaymentMethodCommand}" Margin="0,0,8,0"/>
+                                <Button Style="{StaticResource AccentButton}" Content="Guardar" Command="{Binding SavePaymentMethodCommand}" Margin="0,0,8,0" MinWidth="120"/>
                                 <Button Style="{StaticResource PremiumButton}" Content="Activar/Desactivar" Command="{Binding TogglePaymentMethodActiveCommand}"/>
                             </StackPanel>
                         </StackPanel>
@@ -218,69 +300,188 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Alertas" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
+            <!-- Alertas -->
+            <TabItem Header="Alertas" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Umbrales de presupuesto" Margin="0"/>
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"
+                                           Text="Las líneas del presupuesto cambian a Atención y Límite según el porcentaje de ejecución."/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <CheckBox Content="Alertas de presupuesto activas" IsChecked="{Binding AlertsEnabled}"
+                                          Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,20"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Umbral de atención (%)"/>
+                                        <TextBox Text="{Binding AttentionThreshold, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Umbral de límite (%)"/>
+                                        <TextBox Text="{Binding LimitThreshold, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar alertas"
+                                    Command="{Binding SaveAlertsCommand}" HorizontalAlignment="Right" Margin="0,24,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
                         <StackPanel>
-                            <CheckBox Content="Alertas de presupuesto activas" IsChecked="{Binding AlertsEnabled}"
-                                      Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,16"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Umbral de atención (%)"/>
-                            <TextBox Text="{Binding AttentionThreshold, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Umbral de límite (%)"/>
-                            <TextBox Text="{Binding LimitThreshold, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left" Margin="0,0,0,8"/>
-                            <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="{StaticResource FontSize.Caption}" TextWrapping="Wrap"
-                                       Text="Las líneas del presupuesto cambian a estado Atención y Límite según estos porcentajes de ejecución." Margin="0,0,0,18"/>
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar alertas" Command="{Binding SaveAlertsCommand}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="RESUMEN DE ALERTAS" Style="{StaticResource SettingsMetaLabel}"/>
+                            <TextBlock Text="{Binding ActiveAlertsSummary}" FontSize="{StaticResource FontSize.Subtitle}"
+                                       FontWeight="SemiBold" Foreground="{StaticResource Brush.AccentCyan}" TextWrapping="Wrap" Margin="0,12,0,20"/>
+                            <Border Background="#141C26" CornerRadius="8" Padding="14" BorderBrush="{StaticResource Brush.BorderSubtle}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="ATENCIÓN"/>
+                                    <TextBlock Text="{Binding AttentionThreshold, StringFormat={}{0}%}" FontSize="24" FontWeight="Bold"
+                                               Foreground="{StaticResource Brush.AlertAmber}" Margin="0,4,0,14"/>
+                                    <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="LÍMITE"/>
+                                    <TextBlock Text="{Binding LimitThreshold, StringFormat={}{0}%}" FontSize="24" FontWeight="Bold"
+                                               Foreground="{StaticResource Brush.CriticalRed}"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
+                </Grid>
             </TabItem>
 
-            <TabItem Header="Metas" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
+            <!-- Metas -->
+            <TabItem Header="Metas" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource SectionTitle}" Text="Comportamiento de metas de ahorro"/>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Ritmo mensual de referencia (CLP)"/>
+                                <TextBox Text="{Binding GoalMonthlyPaceInput, UpdateSourceTrigger=PropertyChanged}" MaxWidth="280" HorizontalAlignment="Left" Margin="0,0,0,16"/>
+                                <CheckBox Content="Mostrar proyecciones y estimaciones" IsChecked="{Binding GoalShowProjections}"
+                                          Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,10"/>
+                                <CheckBox Content="Celebrar metas al completarlas" IsChecked="{Binding GoalAutoCelebrate}"
+                                          Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,10"/>
+                                <CheckBox Content="Sugerir aportes según ritmo configurado" IsChecked="{Binding GoalSuggestContributions}"
+                                          Foreground="{StaticResource Brush.TextSecondary}"/>
+                            </StackPanel>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar metas"
+                                    Command="{Binding SaveGoalsBehaviorCommand}" HorizontalAlignment="Right" Margin="0,24,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
                         <StackPanel>
-                            <TextBlock Text="Comportamiento de metas de ahorro" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Ritmo mensual de referencia (CLP)"/>
-                            <TextBox Text="{Binding GoalMonthlyPaceInput, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left" Margin="0,0,0,14"/>
-                            <CheckBox Content="Mostrar proyecciones y estimaciones" IsChecked="{Binding GoalShowProjections}"
-                                      Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,10"/>
-                            <CheckBox Content="Celebrar metas al completarlas" IsChecked="{Binding GoalAutoCelebrate}"
-                                      Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,10"/>
-                            <CheckBox Content="Sugerir aportes según ritmo configurado" IsChecked="{Binding GoalSuggestContributions}"
-                                      Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,18"/>
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar metas" Command="{Binding SaveGoalsBehaviorCommand}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="RITMO CONFIGURADO" Style="{StaticResource SettingsMetaLabel}"/>
+                            <TextBlock Text="{Binding GoalMonthlyPaceInput, StringFormat={}{0} CLP/mes}" FontSize="20" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,12,0,0"/>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
+                </Grid>
             </TabItem>
 
-            <TabItem Header="Apariencia" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
+            <!-- Apariencia -->
+            <TabItem Header="Apariencia" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Moneda y tema" Margin="0"/>
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"
+                                           Text="Personaliza la moneda principal, variante oscura y color de acento de la interfaz."/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Moneda principal"/>
+                                <ComboBox ItemsSource="{Binding CurrencyOptions}" SelectedItem="{Binding SelectedCurrency}"
+                                          DisplayMemberPath="Label" Margin="0,0,0,16"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Variante de tema oscuro"/>
+                                <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}"
+                                          DisplayMemberPath="Label" Margin="0,0,0,16"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Color de acento"/>
+                                <ListBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}"
+                                         ItemTemplate="{StaticResource ColorSwatchTemplate}" MaxHeight="160"/>
+                            </StackPanel>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar apariencia"
+                                    Command="{Binding SaveAppearanceCommand}" HorizontalAlignment="Right" Margin="0,24,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Moneda principal"/>
-                            <ComboBox ItemsSource="{Binding CurrencyOptions}" SelectedItem="{Binding SelectedCurrency}"
-                                      DisplayMemberPath="Label" Width="320" HorizontalAlignment="Left" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Variante de tema oscuro"/>
-                            <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}"
-                                      DisplayMemberPath="Label" Width="320" HorizontalAlignment="Left" Margin="0,0,0,14"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="Color de acento"/>
-                            <ListBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}"
-                                     ItemTemplate="{StaticResource ColorSwatchTemplate}" MaxHeight="160" Margin="0,0,0,18"/>
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar apariencia" Command="{Binding SaveAppearanceCommand}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="VISTA PREVIA" Style="{StaticResource SettingsMetaLabel}"/>
+                            <Border Margin="0,12,0,16" CornerRadius="10" Padding="16" Background="#141C26"
+                                    BorderBrush="{StaticResource Brush.BorderSubtle}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding ActiveThemeDisplay}" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding ActiveCurrencyDisplay}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,6,0,12"/>
+                                    <Border Height="4" CornerRadius="2" Background="{StaticResource Brush.AccentCyan}" Margin="0,0,0,8"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="14" Height="14" Fill="{Binding SelectedAccent.Swatch}"/>
+                                        <TextBlock Text="{Binding ActiveAccentDisplay}" Foreground="{StaticResource Brush.TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="TEMA OSCURO ACTIVO"/>
+                            <TextBlock Text="{Binding ActiveThemeDisplay}" Foreground="{StaticResource Brush.AccentCyan}"/>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
+                </Grid>
             </TabItem>
 
-            <TabItem Header="Exportación" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <StackPanel MaxWidth="720">
-                        <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource FieldLabel}" Text="Carpeta predeterminada"/>
-                                <Grid Margin="0,0,0,12">
+            <!-- Exportación -->
+            <TabItem Header="Exportación" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Style="{StaticResource SettingsPanelCard}" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource SectionTitle}" Text="Exportación de datos"/>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Carpeta predeterminada"/>
+                                <Grid Margin="0,0,0,14">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -290,49 +491,80 @@
                                     <Button Grid.Column="1" Style="{StaticResource PremiumButton}" Content="Examinar" Command="{Binding BrowseExportFolderCommand}" Margin="0,0,8,0"/>
                                     <Button Grid.Column="2" Style="{StaticResource PremiumButton}" Content="Abrir" Command="{Binding OpenExportFolderCommand}"/>
                                 </Grid>
-                                <TextBlock Style="{StaticResource FieldLabel}" Text="Prefijo de archivos"/>
-                                <TextBox Text="{Binding ExportFilePrefix, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Prefijo de archivos"/>
+                                <TextBox Text="{Binding ExportFilePrefix, UpdateSourceTrigger=PropertyChanged}" MaxWidth="240" HorizontalAlignment="Left" Margin="0,0,0,14"/>
                                 <CheckBox Content="Incluir notas en exportaciones" IsChecked="{Binding ExportIncludeNotes}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,8"/>
                                 <CheckBox Content="Incluir gráficos en PDF de reportes" IsChecked="{Binding ExportPdfCharts}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,8"/>
-                                <CheckBox Content="Abrir Excel automáticamente al exportar" IsChecked="{Binding ExportExcelAutoOpen}" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,16"/>
-                                <Button Style="{StaticResource AccentButton}" Content="Guardar exportación" Command="{Binding SaveExportSettingsCommand}" HorizontalAlignment="Left"/>
+                                <CheckBox Content="Abrir Excel automáticamente al exportar" IsChecked="{Binding ExportExcelAutoOpen}" Foreground="{StaticResource Brush.TextSecondary}"/>
                             </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCardBorder}">
-                            <DockPanel>
-                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-                                    <TextBlock Text="Historial reciente" Foreground="{StaticResource Brush.TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <Button Style="{StaticResource PremiumButton}" Content="Actualizar" Command="{Binding RefreshExportHistoryCommand}" Margin="12,0,0,0"/>
-                                </StackPanel>
-                                <DataGrid ItemsSource="{Binding ExportHistory}" Style="{StaticResource PremiumDataGrid}" IsReadOnly="True">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Tipo" Binding="{Binding TypeLabel}" Width="120"/>
-                                        <DataGridTextColumn Header="Archivo" Binding="{Binding FileName}" Width="*"/>
-                                        <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedLabel}" Width="140"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </DockPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
+                            <Button Grid.Row="2" Style="{StaticResource AccentButton}" Content="Guardar exportación"
+                                    Command="{Binding SaveExportSettingsCommand}" HorizontalAlignment="Right" Margin="0,20,0,0" MinWidth="160" Padding="20,10"/>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Style="{StaticResource SettingsPanelCard}" Padding="16">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="Historial reciente" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center"/>
+                                <Button Style="{StaticResource PremiumButton}" Content="Actualizar" Command="{Binding RefreshExportHistoryCommand}" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding ExportHistory}" Style="{StaticResource PremiumDataGrid}" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tipo" Binding="{Binding TypeLabel}" Width="120"/>
+                                    <DataGridTextColumn Header="Archivo" Binding="{Binding FileName}" Width="*"/>
+                                    <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedLabel}" Width="140"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
             </TabItem>
 
-            <TabItem Header="Usuarios" Style="{StaticResource SettingsTabItem}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
-                    <Border Style="{StaticResource KpiCardBorder}" MaxWidth="640">
-                        <StackPanel>
-                            <TextBlock Text="{Binding MultiUserDescription}" Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,14"/>
-                            <CheckBox Content="Habilitar gestión multi-perfil en este equipo" IsChecked="{Binding MultiUserEnabled}"
-                                      Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,14"/>
-                            <ListBox ItemsSource="{Binding UserProfiles}" SelectedItem="{Binding SelectedUser}"
-                                     DisplayMemberPath="DisplayName" MaxHeight="180" Margin="0,0,0,14"/>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource AccentButton}" Content="Cambiar perfil activo" Command="{Binding SwitchUserCommand}" Margin="0,0,8,0"/>
-                                <Button Style="{StaticResource PremiumButton}" Content="Guardar preferencia" Command="{Binding SaveMultiUserSettingsCommand}"/>
+            <!-- Multiusuario -->
+            <TabItem Header="Multiusuario" Style="{StaticResource PremiumTabItem}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="420"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340" MaxWidth="380"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource SettingsPanelCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                <TextBlock Style="{StaticResource SectionTitle}" Text="Perfiles en este equipo" Margin="0"/>
+                                <TextBlock Text="{Binding MultiUserDescription}" Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"/>
                             </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <CheckBox Content="Habilitar gestión multi-perfil en este equipo" IsChecked="{Binding MultiUserEnabled}"
+                                          Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,16"/>
+                                <TextBlock Style="{StaticResource SettingsFieldLabel}" Text="Perfiles registrados"/>
+                                <ListBox ItemsSource="{Binding UserProfiles}" SelectedItem="{Binding SelectedUser}"
+                                         DisplayMemberPath="DisplayName" MinHeight="200" MaxHeight="280" Margin="0,0,0,8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                                <Button Style="{StaticResource AccentButton}" Content="Cambiar perfil activo" Command="{Binding SwitchUserCommand}" Margin="0,0,8,0" MinWidth="160"/>
+                                <Button Style="{StaticResource PremiumButton}" Content="Guardar preferencia" Command="{Binding SaveMultiUserSettingsCommand}" MinWidth="140"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource SettingsPanelCard}" Background="#121A24">
+                        <StackPanel>
+                            <TextBlock Text="CONTEXTO ACTIVO" Style="{StaticResource SettingsMetaLabel}"/>
+                            <TextBlock Text="{Binding ActiveMultiUserSummary}" FontSize="{StaticResource FontSize.Subtitle}"
+                                       FontWeight="SemiBold" Foreground="{StaticResource Brush.AccentCyan}" TextWrapping="Wrap" Margin="0,12,0,16"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="PERFIL SELECCIONADO"/>
+                            <TextBlock Text="{Binding SelectedUser.DisplayName}" Foreground="{StaticResource Brush.TextPrimary}" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource SettingsMetaLabel}" Text="ALMACENAMIENTO"/>
+                            <TextBlock Text="{Binding ActiveStorageDisplay}" Foreground="{StaticResource Brush.TextSecondary}" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

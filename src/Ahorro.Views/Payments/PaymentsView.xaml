@@ -9,7 +9,6 @@
                 <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
-            <conv:ScheduledPaymentStatusToBrushConverter x:Key="PaymentStatusBrush"/>
 
             <Style x:Key="PaymentSummaryCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
                 <Setter Property="Padding" Value="18"/>

@@ -21,18 +21,25 @@
                 </StackPanel>
                 <StackPanel Margin="8,0">
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Dashboard" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Dashboard}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Presupuesto" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Budget}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Budget"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Movimientos" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Transactions}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Transactions"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Metas" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Goals}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Goals"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Pagos" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Payments}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Payments"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Reportes" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Reports}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Reports"/>
                     <RadioButton Style="{StaticResource SidebarNavItem}" Content="Configuración" GroupName="Nav"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource NavPageEquals}, ConverterParameter=Settings}"
                                  Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Bottom" Text="CLP · Offline" FontSize="10"
