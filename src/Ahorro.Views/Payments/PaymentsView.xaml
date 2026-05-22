@@ -9,99 +9,175 @@
                 <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+            <conv:HexToBrushConverter x:Key="HexToBrush"/>
 
-            <Style x:Key="PaymentSummaryCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
-                <Setter Property="Padding" Value="18"/>
-                <Setter Property="MinHeight" Value="96"/>
+            <Style x:Key="PayKpiCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="16,14"/>
+                <Setter Property="MinHeight" Value="104"/>
+                <Setter Property="Margin" Value="0,0,10,0"/>
             </Style>
 
-            <Style x:Key="UpcomingPaymentCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
-                <Setter Property="Padding" Value="14"/>
-                <Setter Property="Margin" Value="0,0,12,0"/>
-                <Setter Property="MinWidth" Value="200"/>
+            <Style x:Key="PayPanelCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="16"/>
             </Style>
 
-            <Style x:Key="CalendarDayCell" TargetType="Border">
-                <Setter Property="Width" Value="36"/>
-                <Setter Property="Height" Value="44"/>
-                <Setter Property="Margin" Value="2"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Background" Value="#141C26"/>
-                <Setter Property="BorderBrush" Value="{StaticResource Brush.BorderSubtle}"/>
-                <Setter Property="BorderThickness" Value="1"/>
+            <Style x:Key="PayFieldLabel" TargetType="TextBlock" BasedOn="{StaticResource SettingsMetaLabel}">
+                <Setter Property="Margin" Value="0,0,0,5"/>
             </Style>
 
-            <Style x:Key="StatusBadge" TargetType="Border">
+            <Style x:Key="PayStatusBadge" TargetType="Border">
                 <Setter Property="CornerRadius" Value="6"/>
                 <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+
+            <Style x:Key="PayRegisterButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+                <Setter Property="Padding" Value="14,8"/>
+                <Setter Property="MinHeight" Value="34"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
+
+            <Style x:Key="PayCompactGhost" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="MinHeight" Value="30"/>
+                <Setter Property="FontSize" Value="11"/>
+            </Style>
+
+            <Style x:Key="PayTableGhost" TargetType="Button" BasedOn="{StaticResource PayCompactGhost}">
+                <Setter Property="MinWidth" Value="64"/>
+            </Style>
+
+            <Style x:Key="PayTableAccent" TargetType="Button" BasedOn="{StaticResource PayRegisterButton}">
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="MinHeight" Value="30"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="MinWidth" Value="88"/>
+                <Setter Property="Margin" Value="0,0,6,0"/>
+            </Style>
+
+            <Style x:Key="UpcomingActionCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="14"/>
+                <Setter Property="MinWidth" Value="220"/>
+                <Setter Property="MaxWidth" Value="280"/>
+                <Setter Property="Margin" Value="0,0,10,0"/>
+            </Style>
+
+            <Style x:Key="CalendarDayButton" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="Height" Value="48"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PayGridText" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
+                <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+            </Style>
+
+            <Style x:Key="PayGridSecondary" TargetType="TextBlock" BasedOn="{StaticResource PayGridText}">
+                <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+                <Setter Property="FontSize" Value="11"/>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <Grid Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="360"/>
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <Grid Margin="0,0,0,20">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource PageHeader}" Text="Pagos y vencimientos"/>
-                        <TextBlock Foreground="{StaticResource Brush.TextSecondary}" Margin="0,6,0,0" TextWrapping="Wrap"
-                                   Text="{Binding ActiveCountLabel}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                        <Button Style="{StaticResource GhostButton}" Content="Actualizar" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
-                        <Button Style="{StaticResource AccentButton}" Content="+ Agregar programado" Command="{Binding OpenNewPaymentCommand}"/>
-                    </StackPanel>
-                </Grid>
+        <!-- Panel principal -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Cabecera -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource PageHeader}" Text="Pagos y vencimientos"/>
+                    <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="12" Margin="0,6,0,0"
+                               Text="{Binding ActiveCountLabel}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource GhostButton}" Content="Actualizar"
+                            Command="{Binding RefreshCommand}" MinHeight="36" Padding="14,8" Margin="0,0,10,0"/>
+                    <Button Style="{StaticResource AccentButton}" Content="+ Agregar programado"
+                            Command="{Binding OpenNewPaymentCommand}" MinHeight="36" Padding="16,8" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Grid>
 
-                    <Border Grid.Column="0" Style="{StaticResource PaymentSummaryCard}" Margin="0,0,12,0"
-                            BorderBrush="#FF6B6B">
-                        <StackPanel>
-                            <TextBlock Text="VENCIDOS" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10"/>
-                            <TextBlock Text="{Binding OverdueLabel}" FontSize="28" FontWeight="Bold"
-                                       Foreground="#FF6B6B" Margin="0,8,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Grid.Column="1" Style="{StaticResource PaymentSummaryCard}" Margin="0,0,12,0"
-                            BorderBrush="{StaticResource Brush.AccentCyan}">
-                        <StackPanel>
-                            <TextBlock Text="PRÓXIMOS" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10"/>
-                            <TextBlock Text="{Binding UpcomingLabel}" FontSize="28" FontWeight="Bold"
-                                       Foreground="{StaticResource Brush.AccentCyan}" Margin="0,8,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Grid.Column="2" Style="{StaticResource PaymentSummaryCard}" Margin="0,0,12,0">
-                        <StackPanel>
-                            <TextBlock Text="PENDIENTES" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10"/>
-                            <TextBlock Text="{Binding PendingLabel}" FontSize="28" FontWeight="Bold"
-                                       Foreground="{StaticResource Brush.TextPrimary}" Margin="0,8,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Grid.Column="3" Style="{StaticResource PaymentSummaryCard}" Background="#121A24">
-                        <StackPanel>
-                            <TextBlock Text="POR PAGAR ESTE MES" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10"/>
-                            <TextBlock Text="{Binding DueThisMonthLabel}" FontSize="24" FontWeight="SemiBold"
-                                       Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,8,0,0"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
+            <!-- KPIs -->
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding SummaryKpis}" Margin="0,0,0,16">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource PayKpiCard}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AccentColor}" Value="#FF6B6B">
+                                            <Setter Property="BorderBrush" Value="#55FF6B6B"/>
+                                            <Setter Property="Background" Value="#1A1418"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="10" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Value}" FontSize="26" FontWeight="Bold"
+                                           Foreground="{Binding AccentBrush}" Margin="0,6,0,0"/>
+                                <TextBlock Text="{Binding Subtitle}" Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="10" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-                <TextBlock Text="Próximos vencimientos" Style="{StaticResource SectionTitle}" Margin="0,0,0,10"/>
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" Margin="0,0,0,20">
-                    <ItemsControl ItemsSource="{Binding UpcomingHighlights}">
+            <!-- Próximos vencimientos -->
+            <Border Grid.Row="2" Style="{StaticResource PayPanelCard}" Margin="0,0,0,14" Padding="14,12">
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Próximos vencimientos" Margin="0"/>
+                            <TextBlock Text="Acción inmediata sobre lo más urgente"
+                                       Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding UpcomingHighlights}"
+                                  Visibility="{Binding HasUpcomingHighlights, Converter={StaticResource BoolToVis}}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
@@ -109,123 +185,228 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Style="{StaticResource UpcomingPaymentCard}">
-                                    <StackPanel>
-                                        <Grid>
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource Brush.TextPrimary}"/>
-                                            <Border Style="{StaticResource StatusBadge}" HorizontalAlignment="Right"
-                                                    Background="#1A2430">
-                                                <TextBlock Text="{Binding StatusLabel}" FontSize="10"
+                                <Border>
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource UpcomingActionCard}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#55FF6B6B"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Width="4" Height="16" CornerRadius="2"
+                                                        Background="{Binding CategoryBrush}" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                                           Foreground="{StaticResource Brush.TextPrimary}"
+                                                           TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                                            </StackPanel>
+                                            <Border Style="{StaticResource PayStatusBadge}" HorizontalAlignment="Right"
+                                                    Background="{Binding StatusBadgeBackground}"
+                                                    BorderBrush="{Binding StatusBrush}">
+                                                <TextBlock Text="{Binding StatusLabel}" FontSize="10" FontWeight="SemiBold"
                                                            Foreground="{Binding StatusBrush}"/>
                                             </Border>
                                         </Grid>
-                                        <TextBlock Text="{Binding Amount}" FontSize="20" FontWeight="Bold"
-                                                   Foreground="{StaticResource Brush.AccentCyan}" Margin="0,8,0,0"/>
-                                        <TextBlock Text="{Binding DueDate}" FontSize="11"
-                                                   Foreground="{StaticResource Brush.TextSecondary}" Margin="0,4,0,0"/>
-                                        <TextBlock Text="{Binding DaysLabel}" FontSize="11"
-                                                   Foreground="{Binding StatusBrush}" Margin="0,2,0,8"/>
-                                        <Button Style="{StaticResource AccentButton}" Content="Registrar pago"
+                                        <TextBlock Grid.Row="1" Text="{Binding Amount}" FontSize="22" FontWeight="Bold"
+                                                   Foreground="{Binding StatusBrush}" Margin="0,10,0,0"/>
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBlock Text="{Binding DueDate}" FontSize="11"
+                                                       Foreground="{StaticResource Brush.TextSecondary}"/>
+                                            <TextBlock Text=" · " FontSize="11" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                            <TextBlock Text="{Binding DaysLabel}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{Binding StatusBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="3" Text="{Binding PaymentMethod}" FontSize="10"
+                                                   Foreground="{StaticResource Brush.TextSecondary}" Margin="0,4,0,8"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Button Grid.Row="4" Style="{StaticResource PayRegisterButton}"
+                                                Content="Registrar pago"
                                                 Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
+                                                HorizontalAlignment="Stretch"
                                                 Visibility="{Binding CanRegister, Converter={StaticResource BoolToVis}}"/>
-                                    </StackPanel>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
 
-                <Border Style="{StaticResource KpiCardBorder}" Padding="16" Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Estado" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                            <ComboBox Width="150" ItemsSource="{Binding StatusFilterOptions}"
-                                      SelectedItem="{Binding SelectedStatusFilter}" DisplayMemberPath="Label"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                            <TextBlock Text="Desde" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterDateFrom}" Width="140"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Hasta" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterDateTo}" Width="140"/>
-                        </StackPanel>
-                        <Button Grid.Column="3" Style="{StaticResource GhostButton}" Content="Restablecer fechas"
-                                Command="{Binding ClearDateFiltersCommand}" VerticalAlignment="Bottom"/>
+                    <TextBlock Text="No hay vencimientos urgentes en el periodo visible."
+                               Foreground="{StaticResource Brush.TextSecondary}" FontSize="12"
+                               Visibility="{Binding HasUpcomingHighlights, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
+                               DockPanel.Dock="Top"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Filtros -->
+            <Border Grid.Row="3" Style="{StaticResource PayPanelCard}" Padding="12,10" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="170"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Estado"/>
+                        <ComboBox Style="{StaticResource PremiumComboBox}" MinHeight="36"
+                                  ItemsSource="{Binding StatusFilterOptions}"
+                                  SelectedItem="{Binding SelectedStatusFilter}" DisplayMemberPath="Label"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Desde"/>
+                        <DatePicker Style="{StaticResource PremiumDatePicker}" SelectedDate="{Binding FilterDateFrom}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Hasta"/>
+                        <DatePicker Style="{StaticResource PremiumDatePicker}" SelectedDate="{Binding FilterDateTo}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom"
+                                Visibility="{Binding HasCalendarDayFilter, Converter={StaticResource BoolToVis}}">
+                        <Border Background="#1A3A4A" BorderBrush="{StaticResource Brush.AccentCyan}"
+                                BorderThickness="1" CornerRadius="12" Padding="10,6" Margin="0,0,8,0">
+                            <TextBlock Foreground="{StaticResource Brush.AccentCyan}" FontSize="11">
+                                <Run Text="Día: "/>
+                                <Run Text="{Binding CalendarDayFilterLabel}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+                        <Button Style="{StaticResource PayCompactGhost}" Content="Quitar día"
+                                Command="{Binding ClearCalendarDayFilterCommand}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="4" Style="{StaticResource PayCompactGhost}" Content="Restablecer fechas"
+                            Command="{Binding ClearDateFiltersCommand}" VerticalAlignment="Bottom"/>
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.PositiveGreen}"
+                       FontSize="12" Margin="0,0,0,10"
+                       Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
+
+            <!-- Tabla -->
+            <Border Grid.Row="5" Style="{StaticResource PayPanelCard}" Padding="0">
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top" Margin="14,12,14,10">
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Listado de pagos programados" Margin="0"/>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{StaticResource Brush.TextSecondary}" FontSize="11"
+                                   Text="{Binding FilteredItems.Count, StringFormat={}{0} registros}"/>
                     </Grid>
-                </Border>
 
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.PositiveGreen}"
-                           Margin="0,0,0,12" Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}"/>
+                    <Grid DockPanel.Dock="Top" MinHeight="300" MaxHeight="520">
+                    <DataGrid ItemsSource="{Binding FilteredItems}"
+                              SelectedItem="{Binding SelectedPayment}"
+                              Style="{StaticResource PremiumDataGrid}"
+                              RowStyle="{StaticResource PremiumDataGridRow}"
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              BorderThickness="0" Background="Transparent"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="NOMBRE" Width="1.4*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="3" Height="22" CornerRadius="1.5"
+                                                    Background="{Binding CategoryBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Style="{StaticResource PayGridText}" Text="{Binding Name}" MaxWidth="160"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="CATEGORÍA" Binding="{Binding Category}" Width="110"
+                                                ElementStyle="{StaticResource PayGridSecondary}"/>
+                            <DataGridTextColumn Header="MÉTODO" Binding="{Binding PaymentMethod}" Width="100"
+                                                ElementStyle="{StaticResource PayGridSecondary}"/>
+                            <DataGridTextColumn Header="MONTO" Binding="{Binding Amount}" Width="105"
+                                                ElementStyle="{StaticResource PayGridText}"/>
+                            <DataGridTextColumn Header="VENCE" Binding="{Binding DueDate}" Width="105"
+                                                ElementStyle="{StaticResource PayGridText}"/>
+                            <DataGridTextColumn Header="FREC." Binding="{Binding FrequencyLabel}" Width="80"
+                                                ElementStyle="{StaticResource PayGridSecondary}"/>
+                            <DataGridTextColumn Header="RECORDATORIO" Binding="{Binding ReminderLabel}" Width="120"
+                                                ElementStyle="{StaticResource PayGridSecondary}"/>
+                            <DataGridTemplateColumn Header="ESTADO" Width="95">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource PayStatusBadge}"
+                                                Background="{Binding StatusBadgeBackground}"
+                                                BorderBrush="{Binding StatusBrush}">
+                                            <TextBlock Text="{Binding StatusLabel}" FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="{Binding StatusBrush}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="ACCIONES" Width="175">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource PayTableAccent}" Content="Registrar"
+                                                    Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding CanRegister, Converter={StaticResource BoolToVis}}"/>
+                                            <Button Style="{StaticResource PayTableGhost}" Content="Editar"
+                                                    Command="{Binding DataContext.OpenEditPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Background="#CC0E141C"
+                            Visibility="{Binding IsListEmpty, Converter={StaticResource BoolToVis}}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="Sin pagos en este criterio" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.TextPrimary}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ajusta estado, fechas o selecciona otro día en el calendario."
+                                       Foreground="{StaticResource Brush.TextSecondary}" FontSize="11"
+                                       Margin="0,8,0,0" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
 
-                <TextBlock Text="Listado de pagos programados" Style="{StaticResource SectionTitle}" Margin="0,0,0,10"/>
-                <DataGrid ItemsSource="{Binding FilteredItems}" Style="{StaticResource PremiumDataGrid}"
-                          AutoGenerateColumns="False" CanUserAddRows="False" MinHeight="280">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="110"/>
-                        <DataGridTextColumn Header="Método" Binding="{Binding PaymentMethod}" Width="100"/>
-                        <DataGridTextColumn Header="Monto" Binding="{Binding Amount}" Width="100"/>
-                        <DataGridTextColumn Header="Vence" Binding="{Binding DueDate}" Width="100"/>
-                        <DataGridTextColumn Header="Frecuencia" Binding="{Binding FrequencyLabel}" Width="90"/>
-                        <DataGridTextColumn Header="Recordatorio" Binding="{Binding ReminderLabel}" Width="130"/>
-                        <DataGridTemplateColumn Header="Estado" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource StatusBadge}" Background="#1A2430">
-                                        <TextBlock Text="{Binding StatusLabel}" FontSize="11"
-                                                   Foreground="{Binding StatusBrush}"/>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="" Width="200">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource AccentButton}" Content="Registrar"
-                                                Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}" Margin="0,0,6,0"
-                                                Visibility="{Binding CanRegister, Converter={StaticResource BoolToVis}}"/>
-                                        <Button Style="{StaticResource GhostButton}" Content="Editar"
-                                                Command="{Binding DataContext.OpenEditPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </StackPanel>
-        </ScrollViewer>
-
-        <Grid Grid.Column="1" Margin="16,0,0,0">
+        <!-- Panel lateral: calendario + editor -->
+        <Grid Grid.Column="1" Margin="14,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Style="{StaticResource KpiCardBorder}" Padding="18" Margin="0,0,0,16">
+            <Border Grid.Row="0" Style="{StaticResource PayPanelCard}" Padding="16" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding CalendarMonthLabel}"/>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding CalendarMonthLabel}" Margin="0,0,0,2"/>
                     <TextBlock Text="Calendario de vencimientos" Foreground="{StaticResource Brush.TextSecondary}"
-                               FontSize="11" Margin="0,4,0,12"/>
-                    <UniformGrid Columns="7" Margin="0,0,0,8">
-                        <TextBlock Text="L" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="M" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="X" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="J" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="V" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="S" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="D" Foreground="{StaticResource Brush.TextSecondary}" FontSize="10" HorizontalAlignment="Center"/>
+                               FontSize="11" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding CalendarSummaryLabel}" Foreground="{StaticResource Brush.AccentCyan}"
+                               FontSize="10" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                    <UniformGrid Columns="7" Margin="0,0,0,6">
+                        <TextBlock Text="L" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="M" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="X" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="J" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="V" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="S" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
+                        <TextBlock Text="D" Style="{StaticResource PayFieldLabel}" HorizontalAlignment="Center" Margin="0"/>
                     </UniformGrid>
+
                     <ItemsControl ItemsSource="{Binding CalendarDays}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -234,78 +415,116 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border ToolTip="{Binding Tooltip}" BorderBrush="{Binding AccentBrush}"
-                                        Width="36" Height="44" Margin="2" CornerRadius="8"
-                                        Background="#141C26" BorderThickness="1">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Opacity" Value="0.35"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsCurrentMonth}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsToday}" Value="True">
-                                                    <Setter Property="BorderBrush" Value="{StaticResource Brush.AccentCyan}"/>
-                                                    <Setter Property="BorderThickness" Value="2"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <Grid>
-                                        <TextBlock Text="{Binding DayNumber}" FontSize="12"
-                                                   Foreground="{StaticResource Brush.TextPrimary}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"/>
-                                        <Ellipse Width="6" Height="6" Fill="{Binding AccentBrush}"
-                                                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"
-                                                 Visibility="{Binding HasPayments, Converter={StaticResource BoolToVis}}"/>
-                                    </Grid>
-                                </Border>
+                                <Button Style="{StaticResource CalendarDayButton}"
+                                        Command="{Binding DataContext.SelectCalendarDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="{Binding Tooltip}">
+                                    <Border Width="40" Height="48" CornerRadius="8"
+                                            Background="{Binding CellBackground}"
+                                            BorderBrush="{Binding AccentBrush}" BorderThickness="1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Opacity" Value="0.4"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCurrentMonth}" Value="True">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource Brush.AccentCyan}"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                        <Setter Property="Background" Value="#1A3A4A"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource Brush.AccentCyan}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <TextBlock Text="{Binding DayNumber}" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource Brush.TextPrimary}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"/>
+                                            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,5">
+                                                <Ellipse Width="6" Height="6" Fill="{Binding AccentBrush}"
+                                                         Visibility="{Binding HasPayments, Converter={StaticResource BoolToVis}}"/>
+                                                <TextBlock Text="{Binding PaymentCountLabel}" FontSize="8"
+                                                           Foreground="{Binding AccentBrush}" HorizontalAlignment="Center"
+                                                           Margin="0,1,0,0"
+                                                           Visibility="{Binding HasPayments, Converter={StaticResource BoolToVis}}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                        <Ellipse Width="8" Height="8" Fill="#FF6B6B" Margin="0,0,6,0"/>
-                        <TextBlock Text="Vencido" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,12,0"/>
-                        <Ellipse Width="8" Height="8" Fill="#27D3FF" Margin="0,0,6,0"/>
-                        <TextBlock Text="Próximo" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,12,0"/>
-                        <Ellipse Width="8" Height="8" Fill="#93A4BD" Margin="0,0,6,0"/>
-                        <TextBlock Text="Pendiente" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"/>
-                    </StackPanel>
+
+                    <Border Background="#141C26" CornerRadius="8" Padding="10,8" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Leyenda del mes" FontSize="10" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,6"/>
+                            <UniformGrid Columns="3">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <Ellipse Width="8" Height="8" Fill="#FF6B6B" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Vencido" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <Ellipse Width="8" Height="8" Fill="#27D3FF" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Próximo" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <Ellipse Width="8" Height="8" Fill="#93A4BD" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Pendiente" FontSize="10" Foreground="{StaticResource Brush.TextSecondary}"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            <TextBlock Text="Toca un día para filtrar el listado. Vuelve a tocar para quitar."
+                                       FontSize="9" Foreground="{StaticResource Brush.TextSecondary}"
+                                       TextWrapping="Wrap" Margin="0,6,0,0" Opacity="0.85"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
-            <Border Grid.Row="1" Style="{StaticResource KpiCardBorder}" Padding="20"
+            <Border Grid.Row="1" Style="{StaticResource PayPanelCard}" Padding="18"
                     Visibility="{Binding IsEditorOpen, Converter={StaticResource BoolToVis}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding EditorTitle}"/>
-                        <TextBlock Text="Nombre del pago" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,12,0,4"/>
-                        <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding EditorTitle}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Programación recurrente" Foreground="{StaticResource Brush.TextSecondary}"
+                                   FontSize="11" Margin="0,0,0,12"/>
 
-                        <TextBlock Text="Monto estimado (CLP)" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditAmountInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Nombre del pago"/>
+                        <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" MinHeight="36" Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Fecha de vencimiento (yyyy-MM-dd)" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditDueDateInput, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Monto estimado (CLP)"/>
+                        <TextBox Text="{Binding EditAmountInput, UpdateSourceTrigger=PropertyChanged}" MinHeight="36" Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Categoría" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding EditCategory}"
-                                  DisplayMemberPath="Name" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Fecha de vencimiento (yyyy-MM-dd)"/>
+                        <TextBox Text="{Binding EditDueDateInput, UpdateSourceTrigger=PropertyChanged}" MinHeight="36" Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Método de pago" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding PaymentMethodOptions}" SelectedItem="{Binding EditPaymentMethod}"
-                                  DisplayMemberPath="Name" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Categoría"/>
+                        <ComboBox Style="{StaticResource PremiumComboBox}" MinHeight="36"
+                                  ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding EditCategory}"
+                                  DisplayMemberPath="Name" Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Frecuencia recurrente" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding FrequencyOptions}" SelectedItem="{Binding EditFrequency}"
-                                  DisplayMemberPath="Label" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Método de pago"/>
+                        <ComboBox Style="{StaticResource PremiumComboBox}" MinHeight="36"
+                                  ItemsSource="{Binding PaymentMethodOptions}" SelectedItem="{Binding EditPaymentMethod}"
+                                  DisplayMemberPath="Name" Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Recordatorio anticipado (días)" Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditReminderDays, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Frecuencia recurrente"/>
+                        <ComboBox Style="{StaticResource PremiumComboBox}" MinHeight="36"
+                                  ItemsSource="{Binding FrequencyOptions}" SelectedItem="{Binding EditFrequency}"
+                                  DisplayMemberPath="Label" Margin="0,0,0,10"/>
+
+                        <TextBlock Style="{StaticResource PayFieldLabel}" Text="Recordatorio anticipado (días)"/>
+                        <TextBox Text="{Binding EditReminderDays, UpdateSourceTrigger=PropertyChanged}" MinHeight="36" Margin="0,0,0,14"/>
 
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource AccentButton}" Content="Guardar" Command="{Binding SavePaymentCommand}" Margin="0,0,8,0"/>
-                            <Button Style="{StaticResource GhostButton}" Content="Cancelar" Command="{Binding CancelEditCommand}"/>
+                            <Button Style="{StaticResource PayRegisterButton}" Content="Guardar"
+                                    Command="{Binding SavePaymentCommand}" Margin="0,0,8,0"/>
+                            <Button Style="{StaticResource GhostButton}" Content="Cancelar"
+                                    Command="{Binding CancelEditCommand}" MinHeight="34"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

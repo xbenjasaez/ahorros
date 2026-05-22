@@ -77,7 +77,12 @@ public partial class App : Application
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var user = scope.ServiceProvider.GetRequiredService<ICurrentUserContext>();
         await DataSeeder.SeedAsync(db, user);
-        await scope.ServiceProvider.GetRequiredService<IBudgetPeriodService>().EnsureActivePeriodAsync();
+        var periodService = scope.ServiceProvider.GetRequiredService<IBudgetPeriodService>();
+        await periodService.EnsureActivePeriodAsync();
+
+        var budget = scope.ServiceProvider.GetRequiredService<IBudgetService>();
+        foreach (var period in await periodService.GetPeriodsAsync())
+            await budget.RecalculateStatusesAsync(period.Id);
 
         var settings = scope.ServiceProvider.GetRequiredService<ISettingsService>();
         var theme = scope.ServiceProvider.GetRequiredService<IThemeService>();

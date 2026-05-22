@@ -10,28 +10,58 @@
                 <ResourceDictionary Source="pack://application:,,,/Ahorro.Views;component/SharedResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+
+            <Style x:Key="ReportsKpiCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="16,14"/>
+                <Setter Property="MinHeight" Value="100"/>
+            </Style>
+
+            <Style x:Key="ReportsPanelCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+                <Setter Property="Padding" Value="16"/>
+            </Style>
+
+            <Style x:Key="ReportsInsightRow" TargetType="Border">
+                <Setter Property="Background" Value="#141C26"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="{StaticResource Brush.BorderSubtle}"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel>
+            <!-- 1. Cabecera -->
             <Grid Margin="0,0,0,20">
                 <StackPanel>
                     <TextBlock Style="{StaticResource PageHeader}" Text="Reportes"/>
-                    <TextBlock Foreground="{StaticResource Brush.TextSecondary}" Text="{Binding PeriodLabel}" Margin="0,4,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border Background="#1A2A35" BorderBrush="{StaticResource Brush.AccentCyan}"
+                                BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding ActivePeriodBadge}" Foreground="{StaticResource Brush.AccentCyan}"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
+                        <TextBlock Foreground="{StaticResource Brush.TextSecondary}" VerticalAlignment="Center"
+                                   Text="{Binding PeriodLabel}"/>
+                    </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                    <ComboBox ItemsSource="{Binding PeriodOptions}" SelectedItem="{Binding SelectedPeriodOption}"
+                    <ComboBox Style="{StaticResource PremiumComboBox}"
+                              ItemsSource="{Binding PeriodOptions}" SelectedItem="{Binding SelectedPeriodOption}"
                               DisplayMemberPath="Label" Width="240" Margin="0,0,12,0"/>
-                    <Button Style="{StaticResource GhostButton}" Content="Actualizar" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
+                    <Button Style="{StaticResource GhostButton}" Content="Actualizar" Command="{Binding RefreshCommand}"/>
                 </StackPanel>
             </Grid>
 
-            <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,0,16" Padding="14"
+            <Border Style="{StaticResource ReportsPanelCard}" Margin="0,0,0,16" Padding="12,10"
                     Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.AccentCyan}" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource Brush.AccentCyan}"
+                           FontSize="12" TextWrapping="Wrap"/>
             </Border>
 
+            <!-- 2. Resumen ejecutivo -->
             <ItemsControl ItemsSource="{Binding SummaryKpis}" Margin="0,0,0,20">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -40,113 +70,215 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0">
-                            <StackPanel>
-                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="{StaticResource FontSize.Caption}" Text="{Binding Title}"/>
-                                <TextBlock Foreground="{Binding AccentBrush}" FontSize="20" FontWeight="Bold" Text="{Binding Value}" Margin="0,6,0,0"/>
-                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="{StaticResource FontSize.Caption}" Text="{Binding Subtitle}" Margin="0,4,0,0"/>
+                        <Border Style="{StaticResource ReportsKpiCard}" Margin="0,0,12,0">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}"
+                                           FontSize="{StaticResource FontSize.Caption}" Text="{Binding Title}"/>
+                                <TextBlock Foreground="{Binding AccentBrush}" FontSize="21" FontWeight="Bold"
+                                           Text="{Binding Value}" Margin="0,6,0,0"/>
+                                <TextBlock Foreground="{StaticResource Brush.TextSecondary}" FontSize="10"
+                                           Text="{Binding Subtitle}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,0,16" Padding="16">
+            <!-- 3. Ahorro acumulado + exportación contextual -->
+            <Border Style="{StaticResource ReportsPanelCard}" Margin="0,0,0,20" Padding="18,16">
                 <Grid>
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Ahorro acumulado en metas"/>
-                        <TextBlock Text="{Binding AccumulatedSavings}" FontSize="28" FontWeight="Bold"
-                                   Foreground="{StaticResource Brush.PositiveGreen}" Margin="0,8,0,0"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Ahorro acumulado en metas" Margin="0"/>
+                        <TextBlock Text="{Binding AccumulatedSavingsSubtitle}" FontSize="11"
+                                   Foreground="{StaticResource Brush.TextSecondary}" Margin="0,4,0,10"/>
+                        <TextBlock Text="{Binding AccumulatedSavings}" FontSize="32" FontWeight="Bold"
+                                   Foreground="{StaticResource Brush.PositiveGreen}"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Style="{StaticResource PremiumButton}" Content="Metas Excel" Command="{Binding ExportGoalsExcelCommand}" Margin="0,0,8,0"/>
-                        <Button Style="{StaticResource PremiumButton}" Content="Metas PDF" Command="{Binding ExportGoalsPdfCommand}"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource AccentButton}" Content="Reporte periodo → PDF"
+                                Command="{Binding ExportReportPdfCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource PremiumButton}" Content="Metas → Excel"
+                                Command="{Binding ExportGoalsExcelCommand}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource PremiumButton}" Content="Metas → PDF"
+                                Command="{Binding ExportGoalsPdfCommand}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Grid Margin="0,0,0,16">
+            <!-- 4. Análisis por categoría y tendencia -->
+            <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1.15*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0" Padding="16">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Gasto por categoría"/>
-                        <lvc:PieChart Series="{Binding CategorySeries}" Height="260"/>
-                    </StackPanel>
+
+                <Border Grid.Column="0" Style="{StaticResource ReportsPanelCard}" Margin="0,0,12,0" MinHeight="300">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Gasto por categoría" Margin="0"/>
+                            <TextBlock Text="{Binding CategorySubtitle}" FontSize="11"
+                                       Foreground="{StaticResource Brush.TextSecondary}"/>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="148"/>
+                            </Grid.ColumnDefinitions>
+                            <lvc:CartesianChart Grid.Column="0"
+                                                Series="{Binding CategorySeries}"
+                                                XAxes="{Binding CategoryXAxes}"
+                                                YAxes="{Binding CategoryYAxes}"
+                                                LegendPosition="{Binding CategoryLegendPosition}"
+                                                Height="280"/>
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="10,0,0,0">
+                                <ItemsControl ItemsSource="{Binding CategoryLegend}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Width="8" Height="8" CornerRadius="2"
+                                                        Background="{Binding AccentBrush}" VerticalAlignment="Top"
+                                                        Margin="0,3,6,0"/>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Category}" FontSize="11"
+                                                               Foreground="{StaticResource Brush.TextPrimary}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock FontSize="10" Foreground="{StaticResource Brush.TextSecondary}">
+                                                        <Run Text="{Binding Amount}"/>
+                                                        <Run Text=" · "/>
+                                                        <Run Text="{Binding PercentLabel}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource KpiCardBorder}" Padding="16">
+
+                <Border Grid.Column="1" Style="{StaticResource ReportsPanelCard}" MinHeight="300">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Tendencia mensual"/>
-                        <lvc:CartesianChart Series="{Binding TrendSeries}" Height="260"/>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Tendencia mensual" Margin="0"/>
+                        <TextBlock Text="{Binding TrendSubtitle}" FontSize="11"
+                                   Foreground="{StaticResource Brush.TextSecondary}" Margin="0,2,0,8"/>
+                        <lvc:CartesianChart Series="{Binding TrendSeries}"
+                                            XAxes="{Binding TrendXAxes}"
+                                            YAxes="{Binding TrendYAxes}"
+                                            LegendPosition="{Binding TrendLegendPosition}"
+                                            Height="280"/>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <Border Style="{StaticResource KpiCardBorder}" Margin="0,0,0,16" Padding="16">
+            <!-- 5. Evolución histórica -->
+            <Border Style="{StaticResource ReportsPanelCard}" Margin="0,0,0,20" Padding="18,16" MinHeight="320">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="Ahorro acumulado por periodo"/>
-                    <lvc:CartesianChart Series="{Binding SavingsSeries}" Height="220"/>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="Ahorro acumulado por periodo" Margin="0"/>
+                    <TextBlock Text="{Binding SavingsHistorySubtitle}" FontSize="11"
+                               Foreground="{StaticResource Brush.TextSecondary}" Margin="0,2,0,12"/>
+                    <lvc:CartesianChart Series="{Binding SavingsSeries}"
+                                        XAxes="{Binding SavingsXAxes}"
+                                        YAxes="{Binding SavingsYAxes}"
+                                        LegendPosition="{Binding SavingsLegendPosition}"
+                                        Height="280"/>
                 </StackPanel>
             </Border>
 
-            <Grid Margin="0,0,0,16">
+            <!-- Detalle analítico -->
+            <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource KpiCardBorder}" Margin="0,0,12,0" Padding="16">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Top gastos"/>
-                        <ItemsControl ItemsSource="{Binding TopExpenses}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,6">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="22" Height="22" CornerRadius="11" Background="#1E2A38" Margin="0,0,10,0">
-                                                <TextBlock Text="{Binding Rank}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                           Foreground="{StaticResource Brush.AccentCyan}" FontSize="11" FontWeight="Bold"/>
+
+                <Border Grid.Column="0" Style="{StaticResource ReportsPanelCard}" Margin="0,0,12,0" MinHeight="220">
+                    <DockPanel LastChildFill="True">
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Top gastos del periodo"/>
+                        <TextBlock DockPanel.Dock="Top" Text="Sin movimientos de gasto"
+                                   Foreground="{StaticResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,8"
+                                   Visibility="{Binding HasTopExpenses, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="280">
+                            <ItemsControl ItemsSource="{Binding TopExpenses}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="28"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Width="22" Height="22" CornerRadius="11"
+                                                    Background="#1A2430" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Rank}" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{StaticResource Brush.AccentCyan}"
+                                                           FontSize="11" FontWeight="Bold"/>
                                             </Border>
-                                            <TextBlock Text="{Binding Description}" Foreground="{StaticResource Brush.TextPrimary}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding Amount}" HorizontalAlignment="Right"
-                                                   Foreground="{StaticResource Brush.AlertAmber}" FontWeight="SemiBold"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-                <Border Grid.Column="1" Style="{StaticResource KpiCardBorder}" Padding="16">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Categorías más excedidas"/>
-                        <ItemsControl ItemsSource="{Binding ExceededCategories}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="0,6" Padding="10" CornerRadius="8" Background="#141C26" BorderBrush="#2A3F55" BorderThickness="1">
-                                        <Grid>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Category}" Foreground="{Binding AccentBrush}" FontWeight="SemiBold"/>
-                                                <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource Brush.TextSecondary}">
-                                                    <Run Text="Plan: "/><Run Text="{Binding Planned}"/>
-                                                    <Run Text=" · Real: "/><Run Text="{Binding Actual}"/>
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding UsedPercent}" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                       Foreground="#FF6B6B" FontWeight="Bold" FontSize="14"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Description}"
+                                                       Foreground="{StaticResource Brush.TextPrimary}"
+                                                       FontSize="12" VerticalAlignment="Center" Margin="8,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Amount}"
+                                                       Foreground="{StaticResource Brush.AlertAmber}"
+                                                       FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
                                         </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource ReportsPanelCard}" MinHeight="220">
+                    <DockPanel LastChildFill="True">
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Categorías más excedidas"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="280">
+                            <ItemsControl ItemsSource="{Binding ExceededCategories}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ReportsInsightRow}">
+                                            <Grid>
+                                                <StackPanel Margin="0,0,52,0">
+                                                    <TextBlock Text="{Binding Category}" Foreground="{Binding AccentBrush}"
+                                                               FontWeight="SemiBold" FontSize="12"/>
+                                                    <TextBlock Margin="0,4,0,0" FontSize="10"
+                                                               Foreground="{StaticResource Brush.TextSecondary}">
+                                                        <Run Text="Plan: "/><Run Text="{Binding Planned}"/>
+                                                        <Run Text=" · Real: "/><Run Text="{Binding Actual}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding UsedPercent}" HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#FF6B6B" FontWeight="Bold" FontSize="14"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
                 </Border>
             </Grid>
 
-            <Border Style="{StaticResource KpiCardBorder}" Padding="16">
+            <!-- Exportaciones del módulo -->
+            <Border Style="{StaticResource ReportsPanelCard}" Padding="16">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource SectionTitle}" Text="Exportaciones" Margin="0,0,0,12"/>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="Exportar datos" Margin="0,0,0,4"/>
+                    <TextBlock Text="Movimientos y presupuesto del periodo seleccionado · metas de ahorro globales"
+                               FontSize="11" Foreground="{StaticResource Brush.TextSecondary}" Margin="0,0,0,12"/>
                     <WrapPanel>
                         <Button Style="{StaticResource AccentButton}" Content="Movimientos → Excel"
                                 Command="{Binding ExportTransactionsExcelCommand}" Margin="0,0,8,8"/>
@@ -154,11 +286,11 @@
                                 Command="{Binding ExportBudgetExcelCommand}" Margin="0,0,8,8"/>
                         <Button Style="{StaticResource PremiumButton}" Content="Presupuesto → PDF"
                                 Command="{Binding ExportBudgetPdfCommand}" Margin="0,0,8,8"/>
-                        <Button Style="{StaticResource AccentButton}" Content="Reporte general → PDF"
+                        <Button Style="{StaticResource AccentButton}" Content="Reporte periodo → PDF"
                                 Command="{Binding ExportReportPdfCommand}" Margin="0,0,8,8"/>
-                        <Button Style="{StaticResource GhostButton}" Content="Metas → Excel"
+                        <Button Style="{StaticResource GhostButton}" Content="Metas de ahorro → Excel"
                                 Command="{Binding ExportGoalsExcelCommand}" Margin="0,0,8,8"/>
-                        <Button Style="{StaticResource GhostButton}" Content="Metas → PDF"
+                        <Button Style="{StaticResource GhostButton}" Content="Metas de ahorro → PDF"
                                 Command="{Binding ExportGoalsPdfCommand}" Margin="0,0,8,8"/>
                     </WrapPanel>
                 </StackPanel>

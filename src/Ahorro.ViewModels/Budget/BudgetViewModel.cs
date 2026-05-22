@@ -321,9 +321,6 @@ public partial class BudgetViewModel : ViewModelBase, ILoadable
         foreach (var a in allocations)
         {
             var status = a.Status;
-            if (a.PlannedAmount > 0 && a.Status == BudgetLineStatus.Normal && a.UsedPercent >= 80)
-                status = BudgetStatusCalculator.FromUsedPercent(a.UsedPercent);
-
             var group = a.CategoryId != Guid.Empty && groupByCategory.TryGetValue(a.CategoryId, out var g)
                 ? g
                 : BudgetGroup.Other;

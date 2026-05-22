@@ -25,22 +25,26 @@ public class ReportService : IReportService
             .Where(a => a.BudgetPeriodId == periodId)
             .ToListAsync(ct);
 
-        var expenseAmounts = await _db.Transactions.AsNoTracking()
-            .Where(t => t.BudgetPeriodId == periodId && t.Type == TransactionType.Expense)
-            .Select(t => t.Amount)
-            .ToListAsync(ct);
-        var expenses = expenseAmounts.Sum();
+        var expenses = period.ActualSpent;
 
         var savingsAlloc = allocations
             .Where(a => a.Category?.DefaultGroup == BudgetGroup.Savings)
             .Sum(a => a.ActualAmount);
 
-        var byCategory = allocations
-            .GroupBy(a => a.Category!.Name)
-            .Select(g => new CategoryDistributionItem(g.Key, g.Sum(x => x.ActualAmount), g.First().Category!.ColorHex))
+        var byCategory = await _db.Transactions.AsNoTracking()
+            .Include(t => t.Category)
+            .Where(t => t.BudgetPeriodId == periodId
+                        && t.Type == TransactionType.Expense
+                        && t.Status != TransactionStatus.Cancelled
+                        && t.Category != null)
+            .GroupBy(t => t.Category!.Name)
+            .Select(g => new CategoryDistributionItem(
+                g.Key,
+                g.Sum(x => x.Amount),
+                g.First().Category!.ColorHex))
             .Where(x => x.Amount > 0)
             .OrderByDescending(x => x.Amount)
-            .ToList();
+            .ToListAsync(ct);
 
         var periods = await _db.BudgetPeriods.AsNoTracking()
             .Where(p => p.UserProfileId == period.UserProfileId)

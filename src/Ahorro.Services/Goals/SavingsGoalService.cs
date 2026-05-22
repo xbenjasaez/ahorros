@@ -48,6 +48,19 @@ public class SavingsGoalService : ISavingsGoalService
             .Include(g => g.Category)
             .FirstOrDefaultAsync(g => g.Id == id && g.UserProfileId == _user.UserId, ct);
 
+    public async Task<List<GoalContribution>> GetRecentContributionsAsync(Guid goalId, int limit = 8, CancellationToken ct = default)
+    {
+        var rows = await _db.GoalContributions.AsNoTracking()
+            .Where(c => c.GoalId == goalId)
+            .ToListAsync(ct);
+
+        return rows
+            .OrderByDescending(c => c.Date)
+            .ThenByDescending(c => c.Amount)
+            .Take(limit)
+            .ToList();
+    }
+
     public async Task<SavingsGoal> CreateAsync(SavingsGoalUpdate data, CancellationToken ct = default)
     {
         var goal = MapToEntity(new SavingsGoal { UserProfileId = _user.UserId }, data);

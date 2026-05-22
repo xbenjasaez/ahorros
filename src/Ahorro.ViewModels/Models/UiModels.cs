@@ -47,6 +47,12 @@ public class BudgetGroupOption
     public string Label { get; init; } = string.Empty;
 }
 
+public class TransactionLinkChip
+{
+    public string Label { get; init; } = string.Empty;
+    public string ColorHex { get; init; } = "#27D3FF";
+}
+
 public class TransactionRowItem
 {
     public Guid Id { get; init; }
@@ -55,11 +61,13 @@ public class TransactionRowItem
     public TransactionType TypeValue { get; init; }
     public string Type { get; init; } = string.Empty;
     public string TypeColor { get; init; } = "#E8EDF5";
+    public string TypeBadgeBackground { get; init; } = "#1A2430";
     public string Description { get; init; } = string.Empty;
     public Guid CategoryId { get; init; }
     public string Category { get; init; } = string.Empty;
     public Guid? SubcategoryId { get; init; }
     public string Subcategory { get; init; } = string.Empty;
+    public bool HasSubcategory { get; init; }
     public Guid PaymentMethodId { get; init; }
     public string PaymentMethod { get; init; } = string.Empty;
     public decimal AmountValue { get; init; }
@@ -68,13 +76,20 @@ public class TransactionRowItem
     public TransactionStatus StatusValue { get; init; }
     public string Status { get; init; } = string.Empty;
     public string StatusColor { get; init; } = "#93A4BD";
+    public string StatusBadgeBackground { get; init; } = "#1A2430";
     public string Tags { get; init; } = string.Empty;
     public bool IsRecurring { get; init; }
     public Guid? SavingsGoalId { get; init; }
     public string? GoalName { get; init; }
+    public Guid? DebtId { get; init; }
+    public string? DebtName { get; init; }
+    public Guid? IncomeSourceId { get; init; }
+    public string? IncomeSourceName { get; init; }
     public string? Note { get; init; }
+    public bool HasNote { get; init; }
     public string? Tag { get; init; }
     public Guid BudgetPeriodId { get; init; }
+    public IReadOnlyList<TransactionLinkChip> LinkChips { get; init; } = [];
 }
 
 public class LookupItem
@@ -126,10 +141,21 @@ public class GoalCardItem
     public string CategoryName { get; init; } = string.Empty;
     public bool HasCategoryLink { get; init; }
     public bool IsCompleted { get; init; }
+    public string StatusLabel { get; init; } = "En curso";
+    public Brush StatusBrush { get; init; } = Brushes.Gray;
     public string ColorHex { get; init; } = "#35E0A1";
     public Brush AccentBrush { get; init; } = Brushes.LimeGreen;
     public Brush GlowBrush { get; init; } = Brushes.LimeGreen;
     public Brush TrackBrush { get; init; } = Brushes.DarkGray;
+}
+
+public class GoalContributionListItem
+{
+    public string Date { get; init; } = string.Empty;
+    public string Amount { get; init; } = string.Empty;
+    public string Note { get; init; } = string.Empty;
+    public string TypeLabel { get; init; } = string.Empty;
+    public Brush AmountBrush { get; init; } = Brushes.Cyan;
 }
 
 public class GoalColorPreset
@@ -157,8 +183,10 @@ public class PaymentListItem
     public string StatusLabel { get; init; } = string.Empty;
     public string StatusColor { get; init; } = "#93A4BD";
     public Brush StatusBrush { get; init; } = Brushes.Gray;
+    public Brush StatusBadgeBackground { get; init; } = Brushes.Transparent;
     public Brush CategoryBrush { get; init; } = Brushes.Cyan;
     public bool CanRegister { get; init; }
+    public bool IsOverdue => Status == ScheduledPaymentStatus.Overdue;
 }
 
 public class PaymentStatusFilterItem
@@ -176,8 +204,12 @@ public class PaymentCalendarDayItem
     public bool IsCurrentMonth { get; init; }
     public bool HasPayments { get; init; }
     public int PaymentCount { get; init; }
+    public string PaymentCountLabel { get; init; } = string.Empty;
     public string Tooltip { get; init; } = string.Empty;
     public Brush AccentBrush { get; init; } = Brushes.Transparent;
+    public Brush CellBackground { get; init; } = Brushes.Transparent;
+    public ScheduledPaymentStatus? DominantStatus { get; init; }
+    public bool IsSelected { get; init; }
 }
 
 public class FilterChipItem
@@ -195,7 +227,18 @@ public class PeriodOption
 
 public class AlertItem
 {
+    public string Title { get; init; } = string.Empty;
     public string Message { get; init; } = string.Empty;
+    public string Severity { get; init; } = "info";
+    public Brush AccentBrush { get; init; } = Brushes.Gray;
+}
+
+public class DistributionLegendItem
+{
+    public string Category { get; init; } = string.Empty;
+    public string Amount { get; init; } = string.Empty;
+    public string PercentLabel { get; init; } = string.Empty;
+    public Brush AccentBrush { get; init; } = Brushes.Cyan;
 }
 
 public class BudgetRuleBucketModel

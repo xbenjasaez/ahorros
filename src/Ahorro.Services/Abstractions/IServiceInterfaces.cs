@@ -71,6 +71,7 @@ public interface ISavingsGoalService
     Task<List<SavingsGoal>> GetActiveGoalsAsync(CancellationToken ct = default);
     Task<GoalsDashboardSummary> GetSummaryAsync(CancellationToken ct = default);
     Task<SavingsGoal?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<List<GoalContribution>> GetRecentContributionsAsync(Guid goalId, int limit = 8, CancellationToken ct = default);
     Task<SavingsGoal> CreateAsync(SavingsGoalUpdate data, CancellationToken ct = default);
     Task UpdateAsync(Guid id, SavingsGoalUpdate data, CancellationToken ct = default);
     Task ContributeAsync(Guid goalId, decimal amount, CancellationToken ct = default);
@@ -178,6 +179,8 @@ public interface IFilterPresetService
 public interface ISyncService { Task SyncAsync(CancellationToken ct = default); }
 public interface IBackupService { Task BackupAsync(CancellationToken ct = default); }
 
+public record DashboardAlert(string Title, string Message, string Severity);
+
 public record DashboardData(
     decimal TotalIncome,
     decimal TotalExpenses,
@@ -185,6 +188,8 @@ public record DashboardData(
     decimal FreeBalance,
     decimal DebtPaid,
     decimal ExecutionPercent,
+    decimal TotalPlanned,
+    decimal TotalActual,
     List<CategoryComparisonItem> CategoryComparisons,
     List<CategoryDistributionItem> Distribution,
     List<TrendPoint> Trend,
@@ -192,7 +197,7 @@ public record DashboardData(
     List<SavingsGoal> ActiveGoals,
     List<CriticalCategoryItem> CriticalCategories,
     List<MoneyTransaction> RecentTransactions,
-    List<string> Alerts);
+    List<DashboardAlert> Alerts);
 
 public record CategoryComparisonItem(string Category, decimal Planned, decimal Actual);
 public record CategoryDistributionItem(string Category, decimal Amount, string Color);

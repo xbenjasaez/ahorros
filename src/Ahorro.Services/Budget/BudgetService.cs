@@ -185,10 +185,14 @@ public class BudgetService : IBudgetService
 
     public async Task RecalculateStatusesAsync(Guid periodId, CancellationToken ct = default)
     {
+        await SyncActualsFromTransactionsAsync(periodId, ct);
+
         var allocations = await _db.BudgetAllocations.Where(a => a.BudgetPeriodId == periodId).ToListAsync(ct);
         foreach (var a in allocations)
         {
-            a.UsedPercent = a.PlannedAmount > 0 ? Math.Round(a.ActualAmount / a.PlannedAmount * 100, 1) : 0;
+            a.UsedPercent = a.PlannedAmount > 0
+                ? Math.Round(a.ActualAmount / a.PlannedAmount * 100, 1)
+                : a.ActualAmount > 0 ? 100m : 0m;
             a.Difference = a.PlannedAmount - a.ActualAmount;
             a.Status = BudgetStatusCalculator.FromUsedPercent(a.UsedPercent);
         }
@@ -204,5 +208,67 @@ public class BudgetService : IBudgetService
         }
 
         await _db.SaveChangesAsync(ct);
+    }
+
+    private async Task SyncActualsFromTransactionsAsync(Guid periodId, CancellationToken ct)
+    {
+        var allocations = await _db.BudgetAllocations
+            .Include(a => a.Subcategory)
+            .Where(a => a.BudgetPeriodId == periodId)
+            .ToListAsync(ct);
+
+        foreach (var allocation in allocations)
+            allocation.ActualAmount = 0;
+
+        var transactions = await _db.Transactions
+            .Where(t => t.BudgetPeriodId == periodId
+                && (t.Type == TransactionType.Expense || t.Type == TransactionType.DebtPayment)
+                && t.Status != TransactionStatus.Cancelled)
+            .ToListAsync(ct);
+
+        foreach (var tx in transactions)
+        {
+            var allocation = ResolveAllocation(allocations, tx.CategoryId, tx.SubcategoryId);
+            if (allocation != null)
+                allocation.ActualAmount += tx.Amount;
+        }
+    }
+
+    private static BudgetAllocation? ResolveAllocation(
+        IReadOnlyList<BudgetAllocation> allocations,
+        Guid categoryId,
+        Guid? subcategoryId)
+    {
+        var categoryAllocs = allocations.Where(a => a.CategoryId == categoryId).ToList();
+        if (categoryAllocs.Count == 0)
+            return null;
+
+        if (subcategoryId.HasValue)
+        {
+            var exact = categoryAllocs.FirstOrDefault(a => a.SubcategoryId == subcategoryId);
+            if (exact != null)
+                return exact;
+
+            var categoryLevel = categoryAllocs.FirstOrDefault(a => a.SubcategoryId == null);
+            if (categoryLevel != null)
+                return categoryLevel;
+        }
+        else
+        {
+            var categoryLevel = categoryAllocs.FirstOrDefault(a => a.SubcategoryId == null);
+            if (categoryLevel != null)
+                return categoryLevel;
+
+            if (categoryAllocs.All(a => a.SubcategoryId != null))
+            {
+                var otros = categoryAllocs.FirstOrDefault(a =>
+                    string.Equals(a.Subcategory?.Name, "Otros", StringComparison.OrdinalIgnoreCase));
+                return otros ?? categoryAllocs
+                    .OrderBy(a => a.Subcategory?.SortOrder ?? int.MaxValue)
+                    .FirstOrDefault();
+            }
+        }
+
+        return categoryAllocs.FirstOrDefault();
     }
 }

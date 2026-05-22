@@ -16,16 +16,18 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
     private readonly ITransactionService _transactions;
     private Guid? _editingId;
     private List<PaymentListItem> _allItems = [];
+    private DateTime? _selectedCalendarDate;
 
-    [ObservableProperty] private string _overdueLabel = "0";
-    [ObservableProperty] private string _upcomingLabel = "0";
-    [ObservableProperty] private string _pendingLabel = "0";
-    [ObservableProperty] private string _dueThisMonthLabel = "$0";
     [ObservableProperty] private string _activeCountLabel = "0 pagos activos";
     [ObservableProperty] private string _calendarMonthLabel = string.Empty;
+    [ObservableProperty] private string _calendarSummaryLabel = string.Empty;
+    [ObservableProperty] private string _calendarDayFilterLabel = string.Empty;
+    [ObservableProperty] private bool _hasCalendarDayFilter;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _hasStatusMessage;
     [ObservableProperty] private bool _isEditorOpen;
+    [ObservableProperty] private bool _hasUpcomingHighlights;
+    [ObservableProperty] private bool _isListEmpty;
     [ObservableProperty] private string _editorTitle = "Nuevo pago programado";
     [ObservableProperty] private string _editName = string.Empty;
     [ObservableProperty] private string _editAmountInput = "0";
@@ -39,6 +41,7 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
     [ObservableProperty] private DateTime? _filterDateTo;
     [ObservableProperty] private PaymentListItem? _selectedPayment;
 
+    public ObservableCollection<KpiCardModel> SummaryKpis { get; } = [];
     public ObservableCollection<PaymentListItem> UpcomingHighlights { get; } = [];
     public ObservableCollection<PaymentListItem> FilteredItems { get; } = [];
     public ObservableCollection<PaymentCalendarDayItem> CalendarDays { get; } = [];
@@ -86,11 +89,8 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
         {
             await ReloadLookupsAsync();
             var summary = await _payments.GetSummaryAsync();
-            OverdueLabel = summary.OverdueCount.ToString();
-            UpcomingLabel = summary.UpcomingCount.ToString();
-            PendingLabel = summary.PendingCount.ToString();
-            DueThisMonthLabel = ClpFormatter.Format(summary.TotalDueThisMonth);
             ActiveCountLabel = summary.TotalActive == 1 ? "1 pago activo" : $"{summary.TotalActive} pagos activos";
+            PopulateSummaryKpis(summary);
 
             var list = await _payments.GetAllAsync(FilterDateFrom, FilterDateTo);
             _allItems = list.Select(MapItem).ToList();
@@ -102,6 +102,29 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
             IsBusy = false;
         }
     }
+
+    private void PopulateSummaryKpis(ScheduledPaymentSummary summary)
+    {
+        SummaryKpis.Clear();
+        SummaryKpis.Add(CreateKpi("VENCIDOS", summary.OverdueCount.ToString(),
+            summary.OverdueCount == 1 ? "requiere acción" : "requieren acción", "#FF6B6B"));
+        SummaryKpis.Add(CreateKpi("PRÓXIMOS", summary.UpcomingCount.ToString(),
+            "en ventana de recordatorio", "#27D3FF"));
+        SummaryKpis.Add(CreateKpi("PENDIENTES", summary.PendingCount.ToString(),
+            "fuera de alerta inmediata", "#93A4BD"));
+        SummaryKpis.Add(CreateKpi("POR PAGAR ESTE MES", ClpFormatter.Format(summary.TotalDueThisMonth),
+            "monto estimado restante", "#35E0A1"));
+    }
+
+    private static KpiCardModel CreateKpi(string title, string value, string subtitle, string accentHex) =>
+        new()
+        {
+            Title = title,
+            Value = value,
+            Subtitle = subtitle,
+            AccentColor = accentHex,
+            AccentBrush = BrushHelper.FromHex(accentHex)
+        };
 
     private async Task ReloadLookupsAsync()
     {
@@ -128,17 +151,26 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
         if (status.HasValue)
             query = query.Where(p => p.Status == status.Value);
 
+        if (_selectedCalendarDate.HasValue)
+            query = query.Where(p => p.DueDateValue.Date == _selectedCalendarDate.Value.Date);
+
         var items = query.OrderBy(p => p.DueDateValue).ToList();
         FilteredItems.Clear();
         foreach (var p in items)
             FilteredItems.Add(p);
 
+        IsListEmpty = FilteredItems.Count == 0;
+
         UpcomingHighlights.Clear();
-        foreach (var p in items
+        foreach (var p in _allItems
                      .Where(p => p.Status is ScheduledPaymentStatus.Upcoming or ScheduledPaymentStatus.Overdue)
-                     .OrderBy(p => p.DueDateValue)
-                     .Take(4))
+                     .OrderBy(p => p.Status == ScheduledPaymentStatus.Overdue ? 0 : 1)
+                     .ThenBy(p => p.DueDateValue)
+                     .Take(3))
             UpcomingHighlights.Add(p);
+
+        HasUpcomingHighlights = UpcomingHighlights.Count > 0;
+        RefreshCalendarSelection();
     }
 
     private void BuildCalendar()
@@ -146,10 +178,21 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
         CalendarDays.Clear();
         var anchor = FilterDateFrom ?? DateTime.Today;
         var first = new DateTime(anchor.Year, anchor.Month, 1);
+        var monthEnd = first.AddMonths(1).AddDays(-1);
         CalendarMonthLabel = first.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-CL"));
+
+        var inMonth = _allItems
+            .Where(p => p.DueDateValue >= first && p.DueDateValue <= monthEnd)
+            .ToList();
+        var overdue = inMonth.Count(p => p.Status == ScheduledPaymentStatus.Overdue);
+        var upcoming = inMonth.Count(p => p.Status == ScheduledPaymentStatus.Upcoming);
+        var pending = inMonth.Count(p => p.Status == ScheduledPaymentStatus.Pending);
+        CalendarSummaryLabel = inMonth.Count == 0
+            ? "Sin vencimientos en este mes"
+            : $"{inMonth.Count} en el mes · {overdue} vencidos · {upcoming} próximos · {pending} pendientes";
+
         var offset = first.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)first.DayOfWeek - 1;
         var start = first.AddDays(-offset);
-
         var byDate = _allItems.GroupBy(p => p.DueDateValue.Date).ToDictionary(g => g.Key, g => g.ToList());
 
         for (var i = 0; i < 42; i++)
@@ -157,9 +200,15 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
             var date = start.AddDays(i);
             byDate.TryGetValue(date.Date, out var dayPayments);
             var count = dayPayments?.Count ?? 0;
-            var worst = dayPayments?.OrderByDescending(p => p.Status == ScheduledPaymentStatus.Overdue)
+            var worst = dayPayments?
+                .OrderByDescending(p => p.Status == ScheduledPaymentStatus.Overdue)
                 .ThenByDescending(p => p.Status == ScheduledPaymentStatus.Upcoming)
+                .ThenByDescending(p => p.Status == ScheduledPaymentStatus.Pending)
                 .FirstOrDefault();
+
+            var accent = worst != null
+                ? BrushHelper.FromHex(ScheduledPaymentLabels.StatusColor(worst.Status))
+                : BrushHelper.FromHex("#3A4A5C");
 
             CalendarDays.Add(new PaymentCalendarDayItem
             {
@@ -170,12 +219,65 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
                 IsCurrentMonth = date.Month == first.Month,
                 HasPayments = count > 0,
                 PaymentCount = count,
+                PaymentCountLabel = count > 1 ? count.ToString() : string.Empty,
+                DominantStatus = worst?.Status,
                 Tooltip = count > 0
-                    ? string.Join(", ", dayPayments!.Select(p => $"{p.Name} ({p.Amount})"))
-                    : string.Empty,
-                AccentBrush = worst != null ? worst.StatusBrush : BrushHelper.FromHex("#1A2430")
+                    ? string.Join(Environment.NewLine, dayPayments!.Select(p => $"{p.Name} · {p.Amount} · {p.StatusLabel}"))
+                    : date.ToString("dddd d MMMM", new System.Globalization.CultureInfo("es-CL")),
+                AccentBrush = accent,
+                CellBackground = count > 0 && worst != null
+                    ? BrushHelper.FromHex(TintHex(ScheduledPaymentLabels.StatusColor(worst.Status), 0.12))
+                    : BrushHelper.FromHex("#141C26"),
+                IsSelected = _selectedCalendarDate.HasValue && _selectedCalendarDate.Value.Date == date.Date
             });
         }
+    }
+
+    private void RefreshCalendarSelection()
+    {
+        if (CalendarDays.Count == 0) return;
+
+        var days = CalendarDays.ToList();
+        CalendarDays.Clear();
+        foreach (var day in days)
+        {
+            CalendarDays.Add(new PaymentCalendarDayItem
+            {
+                Date = day.Date,
+                DayNumber = day.DayNumber,
+                WeekdayShort = day.WeekdayShort,
+                IsToday = day.IsToday,
+                IsCurrentMonth = day.IsCurrentMonth,
+                HasPayments = day.HasPayments,
+                PaymentCount = day.PaymentCount,
+                PaymentCountLabel = day.PaymentCountLabel,
+                DominantStatus = day.DominantStatus,
+                Tooltip = day.Tooltip,
+                AccentBrush = day.AccentBrush,
+                CellBackground = day.CellBackground,
+                IsSelected = _selectedCalendarDate.HasValue && _selectedCalendarDate.Value.Date == day.Date.Date
+            });
+        }
+
+        if (_selectedCalendarDate.HasValue)
+        {
+            HasCalendarDayFilter = true;
+            CalendarDayFilterLabel = _selectedCalendarDate.Value.ToString(
+                "dddd d MMM", new System.Globalization.CultureInfo("es-CL"));
+        }
+        else
+        {
+            HasCalendarDayFilter = false;
+            CalendarDayFilterLabel = string.Empty;
+        }
+    }
+
+    private static string TintHex(string hex, double alpha)
+    {
+        hex = hex.TrimStart('#');
+        if (hex.Length != 6) return "#141C26";
+        var a = (int)(alpha * 255);
+        return $"#{a:X2}{hex}";
     }
 
     private static PaymentListItem MapItem(ScheduledPayment p)
@@ -189,6 +291,7 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
             _ => $"En {days} días"
         };
         var color = p.Category?.ColorHex ?? "#27D3FF";
+        var statusColor = ScheduledPaymentLabels.StatusColor(p.Status);
 
         return new PaymentListItem
         {
@@ -198,19 +301,22 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
             PaymentMethod = p.PaymentMethod?.Name ?? "—",
             Amount = ClpFormatter.Format(p.EstimatedAmount),
             DueDateValue = p.DueDate.Date,
-            DueDate = p.DueDate.ToString("dd MMM yyyy"),
+            DueDate = p.DueDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-CL")),
             DaysUntilDue = days,
             DaysLabel = daysLabel,
             FrequencyLabel = ScheduledPaymentLabels.Frequency(p.Frequency),
-            ReminderLabel = $"Recordatorio {p.ReminderDaysBefore} días antes",
+            ReminderLabel = p.ReminderDaysBefore > 0
+                ? $"{p.ReminderDaysBefore} días antes"
+                : "Sin recordatorio",
             LastPaidLabel = p.LastPaidDate.HasValue
                 ? $"Último pago {p.LastPaidDate.Value:dd MMM yyyy}"
                 : "Sin pagos registrados",
             IsRecurring = p.Frequency != IncomeFrequency.OneTime,
             Status = p.Status,
             StatusLabel = ScheduledPaymentLabels.Status(p.Status),
-            StatusColor = ScheduledPaymentLabels.StatusColor(p.Status),
-            StatusBrush = BrushHelper.FromHex(ScheduledPaymentLabels.StatusColor(p.Status)),
+            StatusColor = statusColor,
+            StatusBrush = BrushHelper.FromHex(statusColor),
+            StatusBadgeBackground = BrushHelper.FromHex(TintHex(statusColor, 0.18)),
             CategoryBrush = BrushHelper.FromHex(color),
             CanRegister = p.Status != ScheduledPaymentStatus.Paid
         };
@@ -324,14 +430,36 @@ public partial class PaymentsViewModel : ViewModelBase, ILoadable
     [RelayCommand]
     private async Task ClearDateFilters()
     {
+        _selectedCalendarDate = null;
         FilterDateFrom = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
         FilterDateTo = FilterDateFrom.Value.AddMonths(2).AddDays(-1);
         await LoadAsync();
     }
 
+    [RelayCommand]
+    private void SelectCalendarDay(PaymentCalendarDayItem? day)
+    {
+        if (day == null || !day.IsCurrentMonth) return;
+
+        if (_selectedCalendarDate.HasValue && _selectedCalendarDate.Value.Date == day.Date.Date)
+            _selectedCalendarDate = null;
+        else
+            _selectedCalendarDate = day.Date.Date;
+
+        ApplyFilters();
+    }
+
+    [RelayCommand]
+    private void ClearCalendarDayFilter()
+    {
+        _selectedCalendarDate = null;
+        ApplyFilters();
+    }
+
     private async Task ReloadPaymentsAsync()
     {
         if (IsBusy) return;
+        _selectedCalendarDate = null;
         var list = await _payments.GetAllAsync(FilterDateFrom, FilterDateTo);
         _allItems = list.Select(MapItem).ToList();
         BuildCalendar();

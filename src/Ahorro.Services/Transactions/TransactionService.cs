@@ -13,12 +13,18 @@ public class TransactionService : ITransactionService
 {
     private readonly AppDbContext _db;
     private readonly TransactionRepository _repo;
+    private readonly IBudgetService _budget;
     private readonly ICurrentUserContext _user;
 
-    public TransactionService(AppDbContext db, TransactionRepository repo, ICurrentUserContext user)
+    public TransactionService(
+        AppDbContext db,
+        TransactionRepository repo,
+        IBudgetService budget,
+        ICurrentUserContext user)
     {
         _db = db;
         _repo = repo;
+        _budget = budget;
         _user = user;
     }
 
@@ -42,8 +48,8 @@ public class TransactionService : ITransactionService
     public async Task<MoneyTransaction> AddAsync(MoneyTransaction tx, CancellationToken ct = default)
     {
         _db.Transactions.Add(tx);
-        await UpdateAllocationActualAsync(tx, ct);
         await _db.SaveChangesAsync(ct);
+        await _budget.RecalculateStatusesAsync(tx.BudgetPeriodId, ct);
         return tx;
     }
 
@@ -51,6 +57,8 @@ public class TransactionService : ITransactionService
     {
         var existing = await _db.Transactions.FindAsync([tx.Id], ct);
         if (existing == null) return tx;
+
+        var previousPeriodId = existing.BudgetPeriodId;
         existing.Date = tx.Date;
         existing.Type = tx.Type;
         existing.Description = tx.Description;
@@ -63,18 +71,25 @@ public class TransactionService : ITransactionService
         existing.Tag = tx.Tag;
         existing.IsRecurring = tx.IsRecurring;
         existing.SavingsGoalId = tx.SavingsGoalId;
+        existing.BudgetPeriodId = tx.BudgetPeriodId;
+
         await _db.SaveChangesAsync(ct);
+        await _budget.RecalculateStatusesAsync(previousPeriodId, ct);
+        if (existing.BudgetPeriodId != previousPeriodId)
+            await _budget.RecalculateStatusesAsync(existing.BudgetPeriodId, ct);
+
         return existing;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var tx = await _db.Transactions.FindAsync([id], ct);
-        if (tx != null)
-        {
-            _db.Transactions.Remove(tx);
-            await _db.SaveChangesAsync(ct);
-        }
+        if (tx == null) return;
+
+        var periodId = tx.BudgetPeriodId;
+        _db.Transactions.Remove(tx);
+        await _db.SaveChangesAsync(ct);
+        await _budget.RecalculateStatusesAsync(periodId, ct);
     }
 
     public async Task<MoneyTransaction?> DuplicateAsync(Guid id, CancellationToken ct = default)
@@ -107,6 +122,7 @@ public class TransactionService : ITransactionService
         if (tx == null) return;
         tx.Status = TransactionStatus.Paid;
         await _db.SaveChangesAsync(ct);
+        await _budget.RecalculateStatusesAsync(tx.BudgetPeriodId, ct);
     }
 
     public async Task SetRecurringAsync(Guid id, bool isRecurring, CancellationToken ct = default)
@@ -115,21 +131,5 @@ public class TransactionService : ITransactionService
         if (tx == null) return;
         tx.IsRecurring = isRecurring;
         await _db.SaveChangesAsync(ct);
-    }
-
-    private async Task UpdateAllocationActualAsync(MoneyTransaction tx, CancellationToken ct)
-    {
-        if (tx.Type != TransactionType.Expense) return;
-
-        var alloc = await _db.BudgetAllocations
-            .FirstOrDefaultAsync(a => a.BudgetPeriodId == tx.BudgetPeriodId && a.CategoryId == tx.CategoryId &&
-                (a.SubcategoryId == null || a.SubcategoryId == tx.SubcategoryId), ct);
-        if (alloc != null)
-        {
-            alloc.ActualAmount += tx.Amount;
-            alloc.UsedPercent = alloc.PlannedAmount > 0 ? alloc.ActualAmount / alloc.PlannedAmount * 100 : 0;
-            alloc.Difference = alloc.PlannedAmount - alloc.ActualAmount;
-            alloc.Status = Helpers.BudgetStatusCalculator.FromUsedPercent(alloc.UsedPercent);
-        }
     }
 }

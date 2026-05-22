@@ -40,6 +40,9 @@ public class MoneyTransactionConfiguration : IEntityTypeConfiguration<MoneyTrans
         b.Property(x => x.Description).HasMaxLength(300);
         b.HasOne(x => x.BudgetPeriod).WithMany(p => p.Transactions).HasForeignKey(x => x.BudgetPeriodId);
         b.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.SavingsGoal).WithMany().HasForeignKey(x => x.SavingsGoalId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.Debt).WithMany().HasForeignKey(x => x.DebtId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.IncomeSource).WithMany().HasForeignKey(x => x.IncomeSourceId).OnDelete(DeleteBehavior.SetNull);
     }
 }
 

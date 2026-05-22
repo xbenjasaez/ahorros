@@ -28,12 +28,17 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
 
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private string _filterSummary = "0 movimientos";
+    [ObservableProperty] private string _summaryTotal = "$0";
     [ObservableProperty] private string _summaryIncome = "$0";
     [ObservableProperty] private string _summaryExpense = "$0";
     [ObservableProperty] private string _summaryNet = "$0";
+    [ObservableProperty] private bool _isResultsEmpty = true;
+    [ObservableProperty] private bool _hasSelectedTransaction;
+    public bool HasActiveFilterChips => ActiveFilterChips.Count > 0;
+    public bool ShowDetailPlaceholder => !HasSelectedTransaction && !IsEditing;
     [ObservableProperty] private TransactionRowItem? _selectedTransaction;
     [ObservableProperty] private bool _showAdvancedFilters;
-    public GridLength AdvancedColumnWidth => ShowAdvancedFilters ? new GridLength(300) : new GridLength(0);
+    public GridLength AdvancedColumnWidth => ShowAdvancedFilters ? new GridLength(268) : new GridLength(0);
     [ObservableProperty] private bool _isEditing;
     [ObservableProperty] private bool _isAddingNew;
     [ObservableProperty] private string _statusMessage = string.Empty;
@@ -226,11 +231,20 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
 
     partial void OnSelectedTransactionChanged(TransactionRowItem? value)
     {
+        HasSelectedTransaction = value != null;
+        OnPropertyChanged(nameof(ShowDetailPlaceholder));
         if (value == null || IsAddingNew) return;
         LoadEditFromRow(value);
         IsEditing = false;
         IsAddingNew = false;
     }
+
+    partial void OnIsEditingChanged(bool value) => OnPropertyChanged(nameof(ShowDetailPlaceholder));
+
+    partial void OnFilterDateFromChanged(DateTime? value) => _ = ApplyFiltersAsync();
+    partial void OnFilterDateToChanged(DateTime? value) => _ = ApplyFiltersAsync();
+    partial void OnFilterMinAmountTextChanged(string? value) => _ = ApplyFiltersAsync();
+    partial void OnFilterMaxAmountTextChanged(string? value) => _ = ApplyFiltersAsync();
 
     partial void OnEditCategoryChanged(CategoryPickerItem? value) => RefreshEditSubcategories(value?.Id);
 
@@ -618,6 +632,7 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
             if (t.IsRecurring) tags.Add("recurrente");
             if (t.SavingsGoal != null) tags.Add(t.SavingsGoal.Name);
 
+            var subName = t.Subcategory?.Name;
             Items.Add(new TransactionRowItem
             {
                 Id = t.Id,
@@ -627,11 +642,13 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
                 TypeValue = t.Type,
                 Type = TransactionLabels.Type(t.Type),
                 TypeColor = TransactionLabels.TypeColor(t.Type),
+                TypeBadgeBackground = TransactionLabels.TypeBadgeBackground(t.Type),
                 Description = t.Description,
                 CategoryId = t.CategoryId,
                 Category = t.Category?.Name ?? "—",
                 SubcategoryId = t.SubcategoryId,
-                Subcategory = t.Subcategory?.Name ?? "—",
+                Subcategory = string.IsNullOrWhiteSpace(subName) ? "—" : subName,
+                HasSubcategory = !string.IsNullOrWhiteSpace(subName),
                 PaymentMethodId = t.PaymentMethodId,
                 PaymentMethod = t.PaymentMethod?.Name ?? "—",
                 AmountValue = t.Amount,
@@ -640,19 +657,29 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
                 StatusValue = t.Status,
                 Status = TransactionLabels.Status(t.Status),
                 StatusColor = TransactionLabels.StatusColor(t.Status),
+                StatusBadgeBackground = TransactionLabels.StatusBadgeBackground(t.Status),
                 Tags = tags.Count > 0 ? string.Join(" · ", tags) : "—",
                 IsRecurring = t.IsRecurring,
                 SavingsGoalId = t.SavingsGoalId,
                 GoalName = t.SavingsGoal?.Name,
+                DebtId = t.DebtId,
+                DebtName = t.Debt?.Name,
+                IncomeSourceId = t.IncomeSourceId,
+                IncomeSourceName = t.IncomeSource?.Name,
                 Note = t.Note,
-                Tag = t.Tag
+                HasNote = !string.IsNullOrWhiteSpace(t.Note),
+                Tag = t.Tag,
+                LinkChips = BuildLinkChips(t)
             });
         }
 
+        var net = income - expense;
         FilterSummary = $"{list.Count} movimientos";
+        SummaryTotal = ClpFormatter.Format(net);
         SummaryIncome = ClpFormatter.Format(income);
         SummaryExpense = ClpFormatter.Format(expense);
-        SummaryNet = ClpFormatter.Format(income - expense);
+        SummaryNet = ClpFormatter.Format(net);
+        IsResultsEmpty = list.Count == 0;
         UpdateActiveChips();
 
         if (SelectedTransaction != null)
@@ -660,6 +687,20 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
             var refreshed = Items.FirstOrDefault(i => i.Id == SelectedTransaction.Id);
             if (refreshed != null) SelectedTransaction = refreshed;
         }
+    }
+
+    private static IReadOnlyList<TransactionLinkChip> BuildLinkChips(MoneyTransaction t)
+    {
+        var chips = new List<TransactionLinkChip>();
+        if (t.SavingsGoalId.HasValue && t.SavingsGoal != null)
+            chips.Add(new TransactionLinkChip { Label = $"Meta · {t.SavingsGoal.Name}", ColorHex = "#35E0A1" });
+        if (t.DebtId.HasValue && t.Debt != null)
+            chips.Add(new TransactionLinkChip { Label = $"Deuda · {t.Debt.Name}", ColorHex = "#FFB84D" });
+        if (t.IncomeSourceId.HasValue && t.IncomeSource != null)
+            chips.Add(new TransactionLinkChip { Label = $"Ingreso · {t.IncomeSource.Name}", ColorHex = "#27D3FF" });
+        if (t.IsRecurring)
+            chips.Add(new TransactionLinkChip { Label = "Pago recurrente", ColorHex = "#9B7AFF" });
+        return chips;
     }
 
     private void UpdateActiveChips()
@@ -696,5 +737,7 @@ public partial class TransactionsViewModel : ViewModelBase, ILoadable
             ActiveFilterChips.Add(new ActiveFilterChipItem { Key = "amount", Label = $"Monto: {_criteria.MinAmount} – {_criteria.MaxAmount}" });
         if (!string.IsNullOrWhiteSpace(_criteria.SearchText))
             ActiveFilterChips.Add(new ActiveFilterChipItem { Key = "text", Label = $"Texto: {_criteria.SearchText}" });
+
+        OnPropertyChanged(nameof(HasActiveFilterChips));
     }
 }

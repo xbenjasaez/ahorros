@@ -20,6 +20,8 @@ public class TransactionRepository
             .Include(t => t.Subcategory)
             .Include(t => t.PaymentMethod)
             .Include(t => t.SavingsGoal)
+            .Include(t => t.Debt)
+            .Include(t => t.IncomeSource)
             .AsQueryable();
 
         if (criteria.BudgetPeriodId.HasValue)

@@ -18,6 +18,8 @@ public static class DataSeeder
         {
             await RestoreUserContextAsync(db, userContext, ct);
             await EnsureAppSettingsForUsersAsync(db, ct);
+            await EnsureDemoGoalsAsync(db, userContext.UserId, ct);
+            await EnsureGoalContributionsAsync(db, ct);
             return;
         }
 
@@ -77,13 +79,9 @@ public static class DataSeeder
             p.PlannedBudget = 2_480_000;
         }
 
-        var activePeriod = periods[2];
-        activePeriod.ActualSpent = 1_890_000;
-        activePeriod.ExecutionPercent = 76.2m;
-        activePeriod.Difference = activePeriod.PlannedBudget - activePeriod.ActualSpent;
-
         SeedAllocations(db, periods, categories);
         SeedGoals(db, user.Id, categories);
+        SeedGoalContributions(db);
         SeedScheduledPayments(db, user.Id, categories, methods);
         SeedDebt(db, user.Id);
         db.AlertRules.Add(new AlertRule { UserProfileId = user.Id, AttentionThreshold = 80, LimitThreshold = 100 });
@@ -93,7 +91,7 @@ public static class DataSeeder
         SeedTransactions(db, periods, categories, methods, ct);
         await db.SaveChangesAsync(ct);
 
-        userContext.ActivePeriodId = activePeriod.Id;
+        userContext.ActivePeriodId = periods[2].Id;
     }
 
     private static async Task EnsureAppSettingsForUsersAsync(AppDbContext db, CancellationToken ct)
@@ -224,38 +222,24 @@ public static class DataSeeder
                     _ => 5m
                 };
                 var planned = net * (pct / 100m);
-                var actual = planned * (cat.Name switch
-                {
-                    "Comida" => 0.92m,
-                    "Ocio" => 1.12m,
-                    "Bencina" => 0.85m,
-                    "Auto" => 0.45m,
-                    _ => 0.6m
-                });
-                if (period == periods[2] && cat.Name == "Ocio") actual = planned * 1.12m;
-
-                var used = planned > 0 ? Math.Round(actual / planned * 100, 1) : 0;
                 if (cat.Subcategories.Any())
                 {
                     foreach (var sub in cat.Subcategories)
                     {
                         var subPlanned = planned / cat.Subcategories.Count;
-                        var subActual = actual / cat.Subcategories.Count;
-                        db.BudgetAllocations.Add(CreateAllocation(period.Id, cat.Id, sub.Id, subPlanned, subActual, pct));
+                        db.BudgetAllocations.Add(CreateAllocation(period.Id, cat.Id, sub.Id, subPlanned, pct));
                     }
                 }
                 else
                 {
-                    db.BudgetAllocations.Add(CreateAllocation(period.Id, cat.Id, null, planned, actual, pct));
+                    db.BudgetAllocations.Add(CreateAllocation(period.Id, cat.Id, null, planned, pct));
                 }
             }
         }
     }
 
-    private static BudgetAllocation CreateAllocation(Guid periodId, Guid catId, Guid? subId, decimal planned, decimal actual, decimal pct)
-    {
-        var used = planned > 0 ? Math.Round(actual / planned * 100, 1) : 0;
-        return new BudgetAllocation
+    private static BudgetAllocation CreateAllocation(Guid periodId, Guid catId, Guid? subId, decimal planned, decimal pct) =>
+        new()
         {
             BudgetPeriodId = periodId,
             CategoryId = catId,
@@ -263,21 +247,83 @@ public static class DataSeeder
             AllocationMode = AllocationMode.Percentage,
             PlannedAmount = planned,
             PlannedPercent = pct,
-            ActualAmount = actual,
-            Difference = planned - actual,
-            UsedPercent = used,
-            Status = Helpers.BudgetStatusCalculator.FromUsedPercent(used)
+            ActualAmount = 0,
+            Difference = planned,
+            UsedPercent = 0,
+            Status = BudgetLineStatus.Normal
         };
+
+    private static async Task EnsureDemoGoalsAsync(AppDbContext db, Guid userId, CancellationToken ct)
+    {
+        if (await db.SavingsGoals.AnyAsync(g => g.UserProfileId == userId && g.Status == GoalStatus.Active, ct))
+            return;
+
+        var categories = await db.BudgetCategories
+            .Where(c => c.UserProfileId == userId && c.IsActive)
+            .ToListAsync(ct);
+        if (categories.Count == 0)
+            return;
+
+        SeedGoals(db, userId, categories);
+        await db.SaveChangesAsync(ct);
+        SeedGoalContributions(db);
+        await db.SaveChangesAsync(ct);
     }
 
     private static void SeedGoals(AppDbContext db, Guid userId, List<BudgetCategory> categories)
     {
         var ahorro = categories.First(c => c.Name == "Ahorro").Id;
+        var auto = categories.First(c => c.Name == "Auto").Id;
         db.SavingsGoals.AddRange(
             new SavingsGoal { UserProfileId = userId, Name = "Casa", TargetAmount = 15_000_000, AccumulatedAmount = 4_200_000, TargetDate = new DateTime(2028, 6, 1), CategoryId = ahorro, ColorHex = "#27D3FF", IconKey = "home" },
-            new SavingsGoal { UserProfileId = userId, Name = "Motor nuevo", TargetAmount = 3_500_000, AccumulatedAmount = 1_100_000, CategoryId = categories.First(c => c.Name == "Auto").Id, ColorHex = "#35E0A1", IconKey = "engine" },
-            new SavingsGoal { UserProfileId = userId, Name = "Emergencia", TargetAmount = 2_000_000, AccumulatedAmount = 1_650_000, ColorHex = "#FFB84D", IconKey = "shield" },
-            new SavingsGoal { UserProfileId = userId, Name = "Proyecto auto", TargetAmount = 800_000, AccumulatedAmount = 320_000, CategoryId = categories.First(c => c.Name == "Auto").Id, ColorHex = "#9B7AFF", IconKey = "car" });
+            new SavingsGoal { UserProfileId = userId, Name = "Motor nuevo", TargetAmount = 3_500_000, AccumulatedAmount = 1_100_000, TargetDate = new DateTime(2027, 3, 15), CategoryId = auto, ColorHex = "#35E0A1", IconKey = "engine" },
+            new SavingsGoal { UserProfileId = userId, Name = "Emergencia", TargetAmount = 2_000_000, AccumulatedAmount = 1_650_000, TargetDate = new DateTime(2026, 9, 1), ColorHex = "#FFB84D", IconKey = "shield" },
+            new SavingsGoal { UserProfileId = userId, Name = "Proyecto auto", TargetAmount = 800_000, AccumulatedAmount = 320_000, TargetDate = new DateTime(2026, 12, 20), CategoryId = auto, ColorHex = "#9B7AFF", IconKey = "car" },
+            new SavingsGoal { UserProfileId = userId, Name = "Vacaciones", TargetAmount = 1_200_000, AccumulatedAmount = 480_000, TargetDate = new DateTime(2027, 1, 10), ColorHex = "#FF6B6B", IconKey = "target" });
+    }
+
+    private static async Task EnsureGoalContributionsAsync(AppDbContext db, CancellationToken ct)
+    {
+        var goals = await db.SavingsGoals.ToListAsync(ct);
+        if (goals.Count == 0)
+            return;
+
+        var today = DateTime.Today;
+        foreach (var goal in goals)
+        {
+            if (await db.GoalContributions.AnyAsync(c => c.GoalId == goal.Id, ct))
+                continue;
+
+            var pace = Math.Max(25_000m, goal.TargetAmount * 0.02m);
+            db.GoalContributions.AddRange(
+                new GoalContribution { GoalId = goal.Id, Amount = pace, Date = today.AddDays(-42), Note = "Aporte manual", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace * 0.8m, Date = today.AddDays(-28), Note = "Aporte manual", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace * 1.1m, Date = today.AddDays(-14), Note = "Refuerzo quincenal", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace, Date = today.AddDays(-3), Note = "Aporte manual", IsAutomatic = false });
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static void SeedGoalContributions(AppDbContext db)
+    {
+        var goals = db.SavingsGoals.OrderBy(g => g.Name).ToList();
+        if (goals.Count == 0)
+            return;
+
+        var today = DateTime.Today;
+        foreach (var goal in goals)
+        {
+            if (db.GoalContributions.Any(c => c.GoalId == goal.Id))
+                continue;
+
+            var pace = Math.Max(25_000m, goal.TargetAmount * 0.02m);
+            db.GoalContributions.AddRange(
+                new GoalContribution { GoalId = goal.Id, Amount = pace, Date = today.AddDays(-42), Note = "Aporte manual", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace * 0.8m, Date = today.AddDays(-28), Note = "Aporte manual", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace * 1.1m, Date = today.AddDays(-14), Note = "Refuerzo quincenal", IsAutomatic = false },
+                new GoalContribution { GoalId = goal.Id, Amount = pace, Date = today.AddDays(-3), Note = "Aporte manual", IsAutomatic = false });
+        }
     }
 
     private static void SeedScheduledPayments(AppDbContext db, Guid userId, List<BudgetCategory> categories, List<PaymentMethod> methods)
@@ -320,28 +366,91 @@ public static class DataSeeder
         var active = periods[2];
         var goals = db.SavingsGoals.Select(g => g.Id).ToList();
         var rnd = new Random(42);
-        var descs = new[] { "Supermercado Lider", "Restaurante sushi", "Uber al trabajo", "Farmacia Ahumada", "Copec combustible", "Spotify familiar", "Mantención auto", "Cine Hoyts", "Aporte meta Casa", "Sueldo mensual", "Freelance diseño", "Pago arriendo", "Gimnasio", "Regalo cumpleaños" };
-        for (var i = 0; i < 45; i++)
+        var catByName = categories.ToDictionary(c => c.Name, c => c);
+        var visa = methods.First(m => m.Name == "Visa").Id;
+        var debito = methods.First(m => m.Name == "Débito").Id;
+
+        void AddExpense(string categoryName, decimal amount, int dayOffset, string description, string? subName = null, TransactionStatus status = TransactionStatus.Paid)
         {
-            var cat = categories[rnd.Next(categories.Count)];
-            var sub = cat.Subcategories.Count > 0 ? cat.Subcategories.ElementAt(rnd.Next(cat.Subcategories.Count)) : null;
-            var isIncome = i % 7 == 0;
+            var cat = catByName[categoryName];
+            var sub = subName == null
+                ? null
+                : cat.Subcategories.FirstOrDefault(s => s.Name == subName);
             db.Transactions.Add(new MoneyTransaction
             {
                 BudgetPeriodId = active.Id,
-                Date = active.StartDate.AddDays(rnd.Next(0, 28)),
-                Type = isIncome ? TransactionType.Income : TransactionType.Expense,
-                Description = descs[rnd.Next(descs.Length)],
+                Date = active.StartDate.AddDays(dayOffset),
+                Type = TransactionType.Expense,
+                Description = description,
                 CategoryId = cat.Id,
                 SubcategoryId = sub?.Id,
-                Amount = isIncome ? rnd.Next(800, 2500) * 1000 : rnd.Next(5, 120) * 1000,
-                PaymentMethodId = methods[rnd.Next(methods.Count)].Id,
-                Status = i % 5 == 0 ? TransactionStatus.Pending : i % 11 == 0 ? TransactionStatus.Cancelled : TransactionStatus.Paid,
-                Note = i % 6 == 0 ? "Nota de seguimiento" : null,
-                Tag = i % 3 == 0 ? "personal" : i % 5 == 0 ? "trabajo" : null,
-                IsRecurring = i % 4 == 0,
-                SavingsGoalId = goals.Count > 0 && i % 6 == 0 ? goals[rnd.Next(goals.Count)] : null
+                Amount = amount,
+                PaymentMethodId = dayOffset % 2 == 0 ? debito : visa,
+                Status = status
             });
         }
+
+        AddExpense("Comida", 185_000, 2, "Supermercado Lider");
+        AddExpense("Comida", 42_000, 9, "Restaurante sushi");
+        AddExpense("Comida", 28_500, 16, "Almuerzo oficina");
+        AddExpense("Bencina", 65_000, 4, "Copec combustible");
+        AddExpense("Bencina", 58_000, 18, "Shell estación");
+        AddExpense("Ocio", 12_990, 6, "Spotify familiar");
+        AddExpense("Ocio", 89_000, 14, "Cine Hoyts");
+        AddExpense("Ocio", 145_000, 21, "Cena cumpleaños");
+        AddExpense("Ocio", 38_000, 24, "Netflix", status: TransactionStatus.Pending);
+        AddExpense("Salud", 29_990, 8, "Gimnasio");
+        AddExpense("Salud", 18_500, 19, "Farmacia Ahumada");
+        AddExpense("Transporte", 24_000, 5, "Uber al trabajo");
+        AddExpense("Transporte", 12_000, 12, "Metro recarga");
+        AddExpense("Cuentas del hogar", 45_000, 3, "Luz");
+        AddExpense("Cuentas del hogar", 24_990, 11, "Internet hogar");
+        AddExpense("Deudas", 420_000, 7, "Pago tarjeta Visa");
+        AddExpense("Auto", 125_000, 10, "Mantención auto", "Mantención");
+        AddExpense("Auto", 48_000, 17, "Repuestos", "Repuestos");
+        AddExpense("Auto", 32_000, 22, "Otros", "Otros");
+        AddExpense("Otros", 185_000, 1, "Colegiatura");
+
+        for (var i = 0; i < 8; i++)
+        {
+            var cat = categories[rnd.Next(categories.Count)];
+            if (cat.Name is "Ahorro" or "Deudas") continue;
+            var sub = cat.Subcategories.Count > 0 ? cat.Subcategories.ElementAt(rnd.Next(cat.Subcategories.Count)) : null;
+            db.Transactions.Add(new MoneyTransaction
+            {
+                BudgetPeriodId = active.Id,
+                Date = active.StartDate.AddDays(rnd.Next(0, 26)),
+                Type = TransactionType.Expense,
+                Description = $"Gasto varios {i + 1}",
+                CategoryId = cat.Id,
+                SubcategoryId = sub?.Id,
+                Amount = rnd.Next(8, 45) * 1000,
+                PaymentMethodId = methods[rnd.Next(methods.Count)].Id,
+                Status = i == 0 ? TransactionStatus.Pending : TransactionStatus.Paid
+            });
+        }
+
+        db.Transactions.Add(new MoneyTransaction
+        {
+            BudgetPeriodId = active.Id,
+            Date = active.StartDate,
+            Type = TransactionType.Income,
+            Description = "Sueldo mensual",
+            CategoryId = catByName["Otros"].Id,
+            Amount = 2_200_000,
+            PaymentMethodId = debito,
+            Status = TransactionStatus.Paid
+        });
+        db.Transactions.Add(new MoneyTransaction
+        {
+            BudgetPeriodId = active.Id,
+            Date = active.StartDate.AddDays(10),
+            Type = TransactionType.Income,
+            Description = "Freelance diseño",
+            CategoryId = catByName["Otros"].Id,
+            Amount = 280_000,
+            PaymentMethodId = debito,
+            Status = TransactionStatus.Paid
+        });
     }
 }

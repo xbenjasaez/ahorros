@@ -26,4 +26,6 @@ public class MoneyTransaction : BaseEntity
     public BudgetSubcategory? Subcategory { get; set; }
     public PaymentMethod? PaymentMethod { get; set; }
     public SavingsGoal? SavingsGoal { get; set; }
+    public Debt? Debt { get; set; }
+    public IncomeSource? IncomeSource { get; set; }
 }
