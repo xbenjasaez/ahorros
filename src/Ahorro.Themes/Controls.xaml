@@ -71,6 +71,18 @@
         <Setter Property="Effect" Value="{StaticResource Effect.CardShadow}"/>
     </Style>
 
+    <Style x:Key="PremiumDataGridColumnHeader" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="#141C26"/>
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Padding" Value="14,12"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.BorderSubtle}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+    </Style>
+
     <Style x:Key="PremiumDataGrid" TargetType="DataGrid">
         <Setter Property="Background" Value="{StaticResource Brush.Card}"/>
         <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
@@ -81,6 +93,8 @@
         <Setter Property="GridLinesVisibility" Value="Horizontal"/>
         <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Brush.BorderSubtle}"/>
         <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource PremiumDataGridColumnHeader}"/>
+        <Setter Property="RowHeight" Value="46"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="CanUserAddRows" Value="False"/>
         <Setter Property="SelectionMode" Value="Single"/>
@@ -211,5 +225,85 @@
         <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <Style x:Key="PremiumTabItem" TargetType="TabItem">
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="Margin" Value="0,0,4,0"/>
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Bd" Padding="{TemplateBinding Padding}" CornerRadius="8,8,0,0"
+                            Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent">
+                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource Brush.AccentCyan}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter TargetName="Bd" Property="Background" Value="#1A2A35"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.AccentCyan}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="#141C26"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PremiumTabControl" TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Background="#121A24" BorderBrush="{StaticResource Brush.BorderSubtle}"
+                                BorderThickness="1" CornerRadius="12,12,0,0" Padding="10,10,10,0">
+                            <TabPanel IsItemsHost="True" Background="Transparent"/>
+                        </Border>
+                        <Border Grid.Row="1" Background="{StaticResource Brush.Card}"
+                                BorderBrush="{StaticResource Brush.BorderSubtle}" BorderThickness="1,0,1,1"
+                                CornerRadius="0,0,12,12" Padding="24" MinHeight="420"
+                                Effect="{StaticResource Effect.CardShadow}">
+                            <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SettingsPanelCard" TargetType="Border" BasedOn="{StaticResource KpiCardBorder}">
+        <Setter Property="Padding" Value="22"/>
+    </Style>
+
+    <Style x:Key="SettingsFieldLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}"/>
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <Style x:Key="SettingsMetaLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
     </Style>
 </ResourceDictionary>

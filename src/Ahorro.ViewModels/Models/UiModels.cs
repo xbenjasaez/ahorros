@@ -31,12 +31,14 @@ public class BudgetLineItem
     public Brush ProgressBrush { get; init; } = Brushes.Gray;
     public Brush CategoryBrush { get; init; } = Brushes.Cyan;
     public bool IsAlert { get; init; }
+    public BudgetGroup Group { get; init; }
 }
 
 public class CategoryPickerItem
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
+    public BudgetGroup Group { get; init; }
 }
 
 public class BudgetGroupOption
@@ -194,6 +196,28 @@ public class PeriodOption
 public class AlertItem
 {
     public string Message { get; init; } = string.Empty;
+}
+
+public class BudgetRuleBucketModel
+{
+    public BudgetGroup Group { get; init; }
+    public string Label { get; init; } = string.Empty;
+    public string Hint { get; init; } = string.Empty;
+    public string PercentLabel { get; init; } = string.Empty;
+    public string TargetAmount { get; init; } = string.Empty;
+    public string ActualAmount { get; init; } = string.Empty;
+    public string DeltaLabel { get; init; } = string.Empty;
+    public double UsageRatio { get; init; }
+    public string AccentColor { get; init; } = "#27D3FF";
+    public Brush AccentBrush { get; init; } = Brushes.Cyan;
+}
+
+public class BudgetAlertInsight
+{
+    public string Title { get; init; } = string.Empty;
+    public string Message { get; init; } = string.Empty;
+    public string Severity { get; init; } = "info";
+    public Brush AccentBrush { get; init; } = Brushes.Gray;
 }
 
 public class RecentTransactionItem
